@@ -14,7 +14,8 @@ def setup_experiment_dir(experiment_name: str) -> Path:
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     exp_dir = PROJECT_ROOT / "experiments" / f"{experiment_name}_{timestamp}"
     exp_dir.mkdir(parents=True, exist_ok=True)
-
+    
+    # Create subdirectories
     (exp_dir / "plots").mkdir(exist_ok=True)
     (exp_dir / "weights").mkdir(exist_ok=True)
     (exp_dir / "logs").mkdir(exist_ok=True)
@@ -34,13 +35,16 @@ def save_training_config(exp_dir: Path, config: dict):
 def plot_training_metrics(results_csv: Path, exp_dir: Path):
     """Plot comprehensive training metrics in English."""
     df = pd.read_csv(results_csv)
-    df.columns = df.columns.str.strip()  
+    df.columns = df.columns.str.strip()  # Remove whitespace
     
+    # Set professional style
     plt.style.use('seaborn-v0_8-darkgrid')
     
+    # === FIGURE 1: Loss Curves ===
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle('Training and Validation Losses', fontsize=16, fontweight='bold')
     
+    # Box Loss
     axes[0, 0].plot(df['epoch'], df['train/box_loss'], label='Train Box Loss', linewidth=2)
     axes[0, 0].plot(df['epoch'], df['val/box_loss'], label='Val Box Loss', linewidth=2)
     axes[0, 0].set_xlabel('Epoch')
@@ -48,7 +52,8 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0, 0].set_title('Bounding Box Regression Loss')
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
-
+    
+    # Class Loss
     axes[0, 1].plot(df['epoch'], df['train/cls_loss'], label='Train Class Loss', linewidth=2)
     axes[0, 1].plot(df['epoch'], df['val/cls_loss'], label='Val Class Loss', linewidth=2)
     axes[0, 1].set_xlabel('Epoch')
@@ -57,6 +62,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0, 1].legend()
     axes[0, 1].grid(True, alpha=0.3)
     
+    # DFL Loss (Distribution Focal Loss)
     axes[1, 0].plot(df['epoch'], df['train/dfl_loss'], label='Train DFL Loss', linewidth=2)
     axes[1, 0].plot(df['epoch'], df['val/dfl_loss'], label='Val DFL Loss', linewidth=2)
     axes[1, 0].set_xlabel('Epoch')
@@ -65,6 +71,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[1, 0].legend()
     axes[1, 0].grid(True, alpha=0.3)
     
+    # Total Loss (falls vorhanden)
     if 'train/loss' in df.columns:
         axes[1, 1].plot(df['epoch'], df['train/loss'], label='Total Train Loss', linewidth=2)
     axes[1, 1].set_xlabel('Epoch')
@@ -78,9 +85,12 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     plt.close()
     print("[plot] Saved: loss_curves.png")
     
+    
+    # === FIGURE 2: Detection Metrics ===
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle('Detection Performance Metrics', fontsize=16, fontweight='bold')
     
+    # Precision
     axes[0, 0].plot(
         df['epoch'], df['metrics/precision(B)'],
         label='Precision', color='green', linewidth=2, marker='o', markersize=3
@@ -92,6 +102,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0, 0].grid(True, alpha=0.3)
     axes[0, 0].legend()
     
+    # Recall
     axes[0, 1].plot(
         df['epoch'], df['metrics/recall(B)'],
         label='Recall', color='blue', linewidth=2, marker='o', markersize=3
@@ -103,6 +114,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0, 1].grid(True, alpha=0.3)
     axes[0, 1].legend()
     
+    # mAP@0.5
     axes[1, 0].plot(
         df['epoch'], df['metrics/mAP50(B)'],
         label='mAP@0.5', color='red', linewidth=2, marker='s', markersize=3
@@ -117,6 +129,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[1, 0].grid(True, alpha=0.3)
     axes[1, 0].legend()
     
+    # mAP@0.5:0.95
     axes[1, 1].plot(
         df['epoch'], df['metrics/mAP50-95(B)'],
         label='mAP@0.5:0.95', color='purple', linewidth=2, marker='^', markersize=3
@@ -133,9 +146,12 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     plt.close()
     print("[plot] Saved: detection_metrics.png")
     
+    
+    # === FIGURE 3: Learning Rate & Summary ===
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     fig.suptitle('Training Dynamics', fontsize=16, fontweight='bold')
     
+    # Learning Rate
     if 'lr/pg0' in df.columns:
         axes[0].plot(df['epoch'], df['lr/pg0'], label='LR (param group 0)', linewidth=2)
     if 'lr/pg1' in df.columns:
@@ -149,6 +165,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0].legend()
     axes[0].grid(True, alpha=0.3, which='both')
     
+    # Metrics Summary Table (basierend auf bestem mAP@0.5)
     axes[1].axis('off')
     best_row_idx = df['metrics/mAP50(B)'].idxmax()
     best_epoch = int(df['epoch'].iloc[best_row_idx])
@@ -170,6 +187,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     table.set_fontsize(10)
     table.scale(1, 2)
     
+    # Style header row
     for i in range(3):
         table[(0, i)].set_facecolor('#40466e')
         table[(0, i)].set_text_props(weight='bold', color='white')
@@ -181,6 +199,8 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     plt.close()
     print("[plot] Saved: training_dynamics.png")
     
+    
+    # === FIGURE 4: Confusion Matrix (if available) ===
     confusion_matrix_path = results_csv.parent / "confusion_matrix.png"
     if confusion_matrix_path.exists():
         import shutil
@@ -246,10 +266,10 @@ AUGMENTATION STRATEGY
       → simulates altitude variation
   ✓ Mosaic (70%) + MixUp (15%) 
       → robust to complex backgrounds and context changes
-  ✓ Light Motion Blur (1%) 
-      → drone movement and slight camera shake
   ✓ Perspective warping and geometric transforms 
       → varying viewing angles and camera poses
+  
+  Note: Motion blur augmentation not available in current Ultralytics version
 
 NEXT STEPS
 ----------
@@ -281,23 +301,30 @@ FILES GENERATED
 
 
 def main():
-
-    experiment_name = "yolov8n_visdrone_test"  
+    # ========================================================================
+    # TEST MODE: 5 Epochen zum Testen der Pipeline
+    # Für finales Training: epochs=100, patience=15, experiment_name ändern
+    # ========================================================================
+    
+    # Setup experiment tracking
+    experiment_name = "yolov8n_visdrone_test"
     exp_dir = setup_experiment_dir(experiment_name)
     
     data_cfg = PROJECT_ROOT / "cfg" / "visdrone_person.yaml"
     print(f"[train] Using data config: {data_cfg}")
 
+    # Map DEVICE to ultralytics 'device' argument
     if DEVICE.type == "cuda":
         device_arg = DEVICE.index if DEVICE.index is not None else 0
     else:
         device_arg = "cpu"
     print(f"[train] Using device: {DEVICE} (ultralytics arg: {device_arg})")
 
+    # Training configuration (for logging)
     train_config = {
         "model": "yolov8n.pt",
         "dataset": "VisDrone (person only)",
-        "epochs": 5,  # TEST MODE
+        "epochs": 5,
         "imgsz": 640,
         "multi_scale": True,
         "batch": 8,
@@ -307,13 +334,13 @@ def main():
             "geometric": {"degrees": 10.0, "scale": 0.6, "translate": 0.2, "perspective": 0.001},
             "mosaic": 0.7,
             "mixup": 0.15,
-            "blur": 0.01,
+            "note": "Motion blur not supported in current Ultralytics version"
         },
         "optimizer": {
             "lr0": 0.01,
             "lrf": 0.01,
             "cos_lr": True,
-            "warmup_epochs": 1,  
+            "warmup_epochs": 1,
         },
         "target_metrics": {
             "mAP@0.5": "0.55-0.65",
@@ -324,57 +351,66 @@ def main():
     }
     save_training_config(exp_dir, train_config)
 
+    # Initialize model
     model = YOLO("yolov8n.pt")
 
     print("\n" + "="*80)
-    print("STARTING TEST TRAINING (5 EPOCHS)")
+    print("  🚀 STARTING TEST TRAINING (5 EPOCHS)")
     print("="*80 + "\n")
     
     results = model.train(
         data=str(data_cfg),
-        epochs=5,  # ← TEST MODE
+        epochs=5,
         imgsz=640,
         multi_scale=True,
         batch=8,
         device=device_arg,
         workers=4,
         
+        # Project structure
         project=str(exp_dir / "runs"),
         name="train",
         exist_ok=True,
         
+        # Optimization
         lr0=0.01,
         lrf=0.01,
         cos_lr=True,
-        patience=3,  
-        warmup_epochs=1,  
+        patience=3,
+        warmup_epochs=1,
         warmup_momentum=0.5,
         
+        # Cache
         cache="disk",
         
-        hsv_h=0.02, hsv_s=0.8, hsv_v=0.5,
+        # Augmentation for SAR scenarios
+        hsv_h=0.02, 
+        hsv_s=0.8, 
+        hsv_v=0.5,
         degrees=10.0,
-        flipud=0.0, fliplr=0.5,
+        flipud=0.0, 
+        fliplr=0.5,
         mosaic=0.7,
         mixup=0.15,
         scale=0.6,
         translate=0.2,
         perspective=0.001,
-        blur=0.01,
         
-        label_smoothing=0.05,
-        close_mosaic=2, 
+        # Regularization
+        close_mosaic=2,
         
-        classes=[0],  
-
+        classes=[0],  # Person only
+        
+        # Enhanced logging
         verbose=True,
-        plots=True,  
+        plots=True,
     )
 
     print("\n" + "="*80)
-    print("TRAINING FINISHED")
+    print("  ✓ TRAINING FINISHED")
     print("="*80 + "\n")
     
+    # Copy weights to experiment directory
     import shutil
     train_dir = exp_dir / "runs" / "train"
     best_weights_run_path = train_dir / "weights" / "best.pt"
@@ -388,23 +424,27 @@ def main():
     else:
         print("[weights][WARN] best.pt not found in run directory. Skipping weight copy.")
 
+    # Copy and plot results
     results_csv_run = train_dir / "results.csv"
     if results_csv_run.exists():
         dst_results_csv = exp_dir / "logs" / "results.csv"
         shutil.copy(results_csv_run, dst_results_csv)
         print("[logs] Copied results.csv")
-    
+        
+        # Generate custom plots
         plot_training_metrics(dst_results_csv, exp_dir)
     else:
         print("[logs][WARN] results.csv not found. Skipping custom plots.")
         dst_results_csv = None
     
+    # Validate best model (if available)
     best_weights_path = exp_dir / "weights" / "best.pt"
     if best_weights_path.exists() and dst_results_csv is not None:
         print("\n[validation] Running final validation on best model...")
         best_model = YOLO(best_weights_path)
         val_results = best_model.val(data=str(data_cfg), split="val", plots=True)
         
+        # Save validation metrics
         val_metrics = {
             "precision": float(val_results.box.p[0]),
             "recall": float(val_results.box.r[0]),
@@ -422,12 +462,13 @@ def main():
         print(f"  • mAP@0.5:       {val_metrics['mAP50']:.4f}")
         print(f"  • mAP@0.5:0.95:  {val_metrics['mAP50-95']:.4f}")
         
+        # Generate final report
         save_final_report(best_model, exp_dir, dst_results_csv)
     else:
         print("\n[validation][WARN] best.pt or results.csv missing. Skipping final validation and report.")
     
     print(f"\n{'='*80}")
-    print(f"All results saved to: {exp_dir}")
+    print(f"✓ All results saved to: {exp_dir}")
     print(f"{'='*80}\n")
 
 
