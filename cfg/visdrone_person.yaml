@@ -1,0 +1,9 @@
+# cfg/visdrone_person.yaml
+
+path: data/VisdroneYOLO
+
+train: images/train
+val: images/val
+
+names:
+  0: person
