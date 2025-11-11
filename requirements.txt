@@ -1,0 +1,7 @@
+torch
+torchvision
+ultralytics
+opencv-python
+tqdm
+matplotlib
+pyyaml

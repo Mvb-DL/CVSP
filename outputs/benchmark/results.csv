@@ -1,0 +1,13 @@
+phase,device,model_name,model_label,model_type,weights,dataset_key,dataset_label,dataset_split,num_images,total_time_sec,avg_time_ms,fps,total_dets,avg_dets_per_image,person_only,score_thresh
+baseline,cuda:0,yolo11n,YOLOv11n,yolo,yolo11n.pt,visdrone,Visdrone (test dev),test dev,1610,31.363285541534424,19.48030157859281,51.33390753554425,366,0.22732919254658385,1,0.5
+baseline,cuda:0,yolo11n,YOLOv11n,yolo,yolo11n.pt,uavdt,UAVDT (test),test,53676,1382.8490750789642,25.762893566565396,38.8155157112391,5097,0.09495864073328862,1,0.5
+baseline,cuda:0,yolo11n,YOLOv11n,yolo,yolo11n.pt,okutama,Okutama (TestSetFrames),test,17326,455.1891362667084,26.27202679595454,38.06329857101027,11097,0.640482511831929,1,0.5
+baseline,cuda:0,yolov8n,YOLOv8n,yolo,yolov8n.pt,visdrone,Visdrone (test dev),test dev,1610,45.78975224494934,28.44083990369524,35.16070563971188,495,0.30745341614906835,1,0.5
+baseline,cuda:0,yolov8n,YOLOv8n,yolo,yolov8n.pt,uavdt,UAVDT (test),test,53676,1253.3748643398285,23.350750136743212,42.82517667072569,5258,0.09795811908487966,1,0.5
+baseline,cuda:0,yolov8n,YOLOv8n,yolo,yolov8n.pt,okutama,Okutama (TestSetFrames),test,17326,418.25154209136963,24.14010978248699,41.42483232306895,7298,0.42121666859055756,1,0.5
+baseline,cuda:0,fasterrcnn_resnet50_fpn,Faster R-CNN,fasterrcnn,,visdrone,Visdrone (test dev),test dev,1610,251.93281984329224,156.48001232502622,6.390592543684684,6155,3.8229813664596275,1,0.5
+baseline,cuda:0,fasterrcnn_resnet50_fpn,Faster R-CNN,fasterrcnn,,uavdt,UAVDT (test),test,53676,10916.385469675064,203.37553971374663,4.917012151055684,151401,2.820646098815113,1,0.5
+baseline,cuda:0,fasterrcnn_resnet50_fpn,Faster R-CNN,fasterrcnn,,okutama,Okutama (TestSetFrames),test,17326,5263.414664506912,303.7870636330897,3.2917794064061523,47527,2.7431028512062796,1,0.5
+baseline,cuda:0,detr_resnet50,DETR-ResNet50,detr,,visdrone,Visdrone (test dev),test dev,1610,294.4646337032318,182.8972880144297,5.467549633218755,12015,7.462732919254658,1,0.5
+baseline,cuda:0,detr_resnet50,DETR-ResNet50,detr,,uavdt,UAVDT (test),test,53676,9758.120944023132,181.7967237503378,5.500649183168472,327625,6.103752142484537,1,0.5
+baseline,cuda:0,detr_resnet50,DETR-ResNet50,detr,,okutama,Okutama (TestSetFrames),test,17326,3395.614225625992,195.98373690557497,5.102464193147824,90346,5.214475354957867,1,0.5
