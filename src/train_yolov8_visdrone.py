@@ -305,7 +305,7 @@ Dataset: VisDrone (~6K images, person class only)
 Model: YOLOv8n (Nano)
 Device: {DEVICE}
 Input Size: 640 (multi-scale training enabled)
-Batch Size: 8
+Batch Size: 6
 Total Epochs: {len(df)}
 
 BEST MODEL PERFORMANCE (Epoch {best_epoch})
@@ -324,7 +324,7 @@ Loss Values:
 PROJECT TARGETS vs ACHIEVED
 ----------------------------
   Target mAP@0.5:    0.55 - 0.65
-  Achieved:          {best_metrics['metrics/mAP50(B)']:.4f} {" PASSED" if best_metrics['metrics/mAP50(B)'] >= 0.55 else "✗ BELOW TARGET"}
+  Achieved:          {best_metrics['metrics/mAP50(B)']:.4f} {"✓ PASSED" if best_metrics['metrics/mAP50(B)'] >= 0.55 else "✗ BELOW TARGET"}
   
   Target FPS:        ≥ 15 FPS (to be tested in inference stage)
 
@@ -336,13 +336,13 @@ TRAINING DYNAMICS
 
 AUGMENTATION STRATEGY
 ---------------------
-   Moderate HSV Color Jitter (h=0.02, s=0.8, v=0.5) 
+  ✓ Moderate HSV Color Jitter (h=0.02, s=0.8, v=0.5) 
       → robust to bright / neon clothing without overfitting to extreme colors
-   Multi-scale training around 640px 
+  ✓ Multi-scale training around 640px 
       → simulates altitude variation
-   Mosaic (70%) + MixUp (15%) 
+  ✓ Mosaic (70%) + MixUp (15%) 
       → robust to complex backgrounds and context changes
-   Perspective warping and geometric transforms 
+  ✓ Perspective warping and geometric transforms 
       → varying viewing angles and camera poses
   
   Note: Motion blur augmentation not available in current Ultralytics version
@@ -400,7 +400,6 @@ def save_all_metrics_text(
         f.write(f"Results CSV: {results_csv}\n\n")
 
         f.write("---- Per-epoch training & validation metrics (from results.csv) ----\n\n")
-        # Kompletten DataFrame als Texttabelle ausgeben
         f.write(df.to_string(index=False))
         f.write("\n\n")
 
@@ -442,7 +441,7 @@ def main():
         "epochs": 50,
         "imgsz": 640,
         "multi_scale": True,
-        "batch": 8,
+        "batch": 6,  # <- reduziert von 8 auf 6
         "device": str(DEVICE),
         "augmentation": {
             "hsv": {"h": 0.02, "s": 0.8, "v": 0.5},
@@ -476,7 +475,7 @@ def main():
     model = YOLO("yolov8n.pt")
 
     print("\n" + "=" * 80)
-    print(" STARTING FULL TRAINING (50 EPOCHS)")
+    print("  🚀 STARTING FULL TRAINING (50 EPOCHS)")
     print("=" * 80 + "\n")
 
     results = model.train(
@@ -484,9 +483,9 @@ def main():
         epochs=50,
         imgsz=640,
         multi_scale=True,
-        batch=8,
+        batch=6,        # <- reduziert
         device=device_arg,
-        workers=4,
+        workers=2,      # <- weniger DataLoader-Worker
         # Project structure
         project=str(exp_dir / "runs"),
         name="train",
@@ -498,8 +497,8 @@ def main():
         patience=10,
         warmup_epochs=3,
         warmup_momentum=0.5,
-        # Cache
-        cache="disk",
+        # Cache: komplett aus
+        cache=False,
         # Augmentation for SAR scenarios
         hsv_h=0.02,
         hsv_s=0.8,
@@ -521,7 +520,7 @@ def main():
     )
 
     print("\n" + "=" * 80)
-    print("   TRAINING FINISHED")
+    print("  ✓ TRAINING FINISHED")
     print("=" * 80 + "\n")
 
     # Copy weights to experiment directory
@@ -594,7 +593,7 @@ def main():
         )
 
     print(f"\n{'=' * 80}")
-    print(f" All results saved to: {exp_dir}")
+    print(f"✓ All results saved to: {exp_dir}")
     print(f"{'=' * 80}\n")
 
 
