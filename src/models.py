@@ -35,62 +35,43 @@ def save_training_config(exp_dir: Path, config: dict):
 def plot_training_metrics(results_csv: Path, exp_dir: Path):
     """Plot comprehensive training metrics in English."""
     df = pd.read_csv(results_csv)
-    df.columns = df.columns.str.strip()  # Remove whitespace
+    df.columns = df.columns.str.strip()
 
-    run_name = exp_dir.name  # e.g. yolov8m_visdrone_optimized_20251111_123456
+    run_name = exp_dir.name
 
-    # Set professional style
     plt.style.use("seaborn-v0_8-darkgrid")
 
     # === FIGURE 1: Loss Curves ===
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle("Training and Validation Losses", fontsize=16, fontweight="bold")
 
-    # Box Loss
-    axes[0, 0].plot(
-        df["epoch"], df["train/box_loss"], label="Train Box Loss", linewidth=2
-    )
-    axes[0, 0].plot(
-        df["epoch"], df["val/box_loss"], label="Val Box Loss", linewidth=2
-    )
+    axes[0, 0].plot(df["epoch"], df["train/box_loss"], label="Train Box Loss", linewidth=2)
+    axes[0, 0].plot(df["epoch"], df["val/box_loss"], label="Val Box Loss", linewidth=2)
     axes[0, 0].set_xlabel("Epoch")
     axes[0, 0].set_ylabel("Loss")
     axes[0, 0].set_title("Bounding Box Regression Loss")
     axes[0, 0].legend()
     axes[0, 0].grid(True, alpha=0.3)
 
-    # Class Loss
-    axes[0, 1].plot(
-        df["epoch"], df["train/cls_loss"], label="Train Class Loss", linewidth=2
-    )
-    axes[0, 1].plot(
-        df["epoch"], df["val/cls_loss"], label="Val Class Loss", linewidth=2
-    )
+    axes[0, 1].plot(df["epoch"], df["train/cls_loss"], label="Train Class Loss", linewidth=2)
+    axes[0, 1].plot(df["epoch"], df["val/cls_loss"], label="Val Class Loss", linewidth=2)
     axes[0, 1].set_xlabel("Epoch")
     axes[0, 1].set_ylabel("Loss")
     axes[0, 1].set_title("Classification Loss")
     axes[0, 1].legend()
     axes[0, 1].grid(True, alpha=0.3)
 
-    # DFL Loss (Distribution Focal Loss)
-    axes[1, 0].plot(
-        df["epoch"], df["train/dfl_loss"], label="Train DFL Loss", linewidth=2
-    )
-    axes[1, 0].plot(
-        df["epoch"], df["val/dfl_loss"], label="Val DFL Loss", linewidth=2
-    )
+    axes[1, 0].plot(df["epoch"], df["train/dfl_loss"], label="Train DFL Loss", linewidth=2)
+    axes[1, 0].plot(df["epoch"], df["val/dfl_loss"], label="Val DFL Loss", linewidth=2)
     axes[1, 0].set_xlabel("Epoch")
     axes[1, 0].set_ylabel("Loss")
     axes[1, 0].set_title("Distribution Focal Loss")
     axes[1, 0].legend()
     axes[1, 0].grid(True, alpha=0.3)
 
-    # Total Loss (falls vorhanden)
     has_total_loss = False
     if "train/loss" in df.columns:
-        axes[1, 1].plot(
-            df["epoch"], df["train/loss"], label="Total Train Loss", linewidth=2
-        )
+        axes[1, 1].plot(df["epoch"], df["train/loss"], label="Total Train Loss", linewidth=2)
         has_total_loss = True
     axes[1, 1].set_xlabel("Epoch")
     axes[1, 1].set_ylabel("Loss")
@@ -109,16 +90,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     fig, axes = plt.subplots(2, 2, figsize=(14, 10))
     fig.suptitle("Detection Performance Metrics", fontsize=16, fontweight="bold")
 
-    # Precision
-    axes[0, 0].plot(
-        df["epoch"],
-        df["metrics/precision(B)"],
-        label="Precision",
-        color="green",
-        linewidth=2,
-        marker="o",
-        markersize=3,
-    )
+    axes[0, 0].plot(df["epoch"], df["metrics/precision(B)"], label="Precision", color="green", linewidth=2, marker="o", markersize=3)
     axes[0, 0].set_xlabel("Epoch")
     axes[0, 0].set_ylabel("Precision")
     axes[0, 0].set_title("Precision @ IoU=0.5 (Person Class)")
@@ -126,16 +98,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0, 0].grid(True, alpha=0.3)
     axes[0, 0].legend()
 
-    # Recall
-    axes[0, 1].plot(
-        df["epoch"],
-        df["metrics/recall(B)"],
-        label="Recall",
-        color="blue",
-        linewidth=2,
-        marker="o",
-        markersize=3,
-    )
+    axes[0, 1].plot(df["epoch"], df["metrics/recall(B)"], label="Recall", color="blue", linewidth=2, marker="o", markersize=3)
     axes[0, 1].set_xlabel("Epoch")
     axes[0, 1].set_ylabel("Recall")
     axes[0, 1].set_title("Recall @ IoU=0.5 (Person Class)")
@@ -143,23 +106,8 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0, 1].grid(True, alpha=0.3)
     axes[0, 1].legend()
 
-    # mAP@0.5
-    axes[1, 0].plot(
-        df["epoch"],
-        df["metrics/mAP50(B)"],
-        label="mAP@0.5",
-        color="red",
-        linewidth=2,
-        marker="s",
-        markersize=3,
-    )
-    axes[1, 0].axhline(
-        y=0.55,
-        color="orange",
-        linestyle="--",
-        linewidth=1.5,
-        label="Target (0.55-0.65)",
-    )
+    axes[1, 0].plot(df["epoch"], df["metrics/mAP50(B)"], label="mAP@0.5", color="red", linewidth=2, marker="s", markersize=3)
+    axes[1, 0].axhline(y=0.55, color="orange", linestyle="--", linewidth=1.5, label="Target (0.55-0.65)")
     axes[1, 0].axhline(y=0.65, color="orange", linestyle="--", linewidth=1.5)
     axes[1, 0].set_xlabel("Epoch")
     axes[1, 0].set_ylabel("mAP@0.5")
@@ -168,16 +116,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[1, 0].grid(True, alpha=0.3)
     axes[1, 0].legend()
 
-    # mAP@0.5:0.95
-    axes[1, 1].plot(
-        df["epoch"],
-        df["metrics/mAP50-95(B)"],
-        label="mAP@0.5:0.95",
-        color="purple",
-        linewidth=2,
-        marker="^",
-        markersize=3,
-    )
+    axes[1, 1].plot(df["epoch"], df["metrics/mAP50-95(B)"], label="mAP@0.5:0.95", color="purple", linewidth=2, marker="^", markersize=3)
     axes[1, 1].set_xlabel("Epoch")
     axes[1, 1].set_ylabel("mAP@0.5:0.95")
     axes[1, 1].set_title("Mean Average Precision @ IoU=0.5:0.95")
@@ -195,7 +134,6 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     fig, axes = plt.subplots(1, 2, figsize=(14, 5))
     fig.suptitle("Training Dynamics", fontsize=16, fontweight="bold")
 
-    # Learning Rate
     if "lr/pg0" in df.columns:
         axes[0].plot(df["epoch"], df["lr/pg0"], label="LR (param group 0)", linewidth=2)
     if "lr/pg1" in df.columns:
@@ -209,62 +147,29 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     axes[0].legend()
     axes[0].grid(True, alpha=0.3, which="both")
 
-    # Metrics Summary Table (basierend auf bestem mAP@0.5)
     axes[1].axis("off")
     best_row_idx = df["metrics/mAP50(B)"].idxmax()
     best_epoch = int(df["epoch"].iloc[best_row_idx])
 
     summary_data = [
         ["Metric", "Best Value", "Epoch"],
-        [
-            "Precision",
-            f"{df['metrics/precision(B)'].iloc[best_row_idx]:.4f}",
-            str(best_epoch),
-        ],
-        [
-            "Recall",
-            f"{df['metrics/recall(B)'].iloc[best_row_idx]:.4f}",
-            str(best_epoch),
-        ],
-        [
-            "mAP@0.5",
-            f"{df['metrics/mAP50(B)'].iloc[best_row_idx]:.4f}",
-            str(best_epoch),
-        ],
-        [
-            "mAP@0.5:0.95",
-            f"{df['metrics/mAP50-95(B)'].iloc[best_row_idx]:.4f}",
-            str(best_epoch),
-        ],
-        [
-            "Box Loss",
-            f"{df['val/box_loss'].iloc[best_row_idx]:.4f}",
-            str(best_epoch),
-        ],
-        [
-            "Class Loss",
-            f"{df['val/cls_loss'].iloc[best_row_idx]:.4f}",
-            str(best_epoch),
-        ],
+        ["Precision", f"{df['metrics/precision(B)'].iloc[best_row_idx]:.4f}", str(best_epoch)],
+        ["Recall", f"{df['metrics/recall(B)'].iloc[best_row_idx]:.4f}", str(best_epoch)],
+        ["mAP@0.5", f"{df['metrics/mAP50(B)'].iloc[best_row_idx]:.4f}", str(best_epoch)],
+        ["mAP@0.5:0.95", f"{df['metrics/mAP50-95(B)'].iloc[best_row_idx]:.4f}", str(best_epoch)],
+        ["Box Loss", f"{df['val/box_loss'].iloc[best_row_idx]:.4f}", str(best_epoch)],
+        ["Class Loss", f"{df['val/cls_loss'].iloc[best_row_idx]:.4f}", str(best_epoch)],
     ]
-    table = axes[1].table(
-        cellText=summary_data,
-        cellLoc="left",
-        loc="center",
-        colWidths=[0.4, 0.3, 0.3],
-    )
+    table = axes[1].table(cellText=summary_data, cellLoc="left", loc="center", colWidths=[0.4, 0.3, 0.3])
     table.auto_set_font_size(False)
     table.set_fontsize(10)
     table.scale(1, 2)
 
-    # Style header row
     for i in range(3):
         table[(0, i)].set_facecolor("#40466e")
         table[(0, i)].set_text_props(weight="bold", color="white")
 
-    axes[1].set_title(
-        "Best Model Performance Summary", fontsize=12, fontweight="bold", pad=20
-    )
+    axes[1].set_title("Best Model Performance Summary", fontsize=12, fontweight="bold", pad=20)
 
     plt.tight_layout()
     out_path = exp_dir / "plots" / f"training_dynamics_{run_name}.png"
@@ -272,11 +177,9 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     plt.close()
     print("[plot] Saved:", out_path.name)
 
-    # === FIGURE 4: Confusion Matrix (if available) ===
     confusion_matrix_path = results_csv.parent / "confusion_matrix.png"
     if confusion_matrix_path.exists():
         import shutil
-
         dst_cm = exp_dir / "plots" / f"confusion_matrix_{run_name}.png"
         shutil.copy(confusion_matrix_path, dst_cm)
         print("[plot] Copied:", dst_cm.name)
@@ -387,14 +290,8 @@ FILES GENERATED
     print(f"[report] Saved to {report_file}")
 
 
-def save_all_metrics_text(
-    exp_dir: Path, results_csv: Path, val_metrics: dict, best_weights_path: Path
-):
-    """
-    Save a plain-text file that contains:
-      - all per-epoch training/validation metrics (from results.csv)
-      - the final validation metrics of the best model
-    """
+def save_all_metrics_text(exp_dir: Path, results_csv: Path, val_metrics: dict, best_weights_path: Path):
+    """Save all metrics to text file."""
     run_name = exp_dir.name
     df = pd.read_csv(results_csv)
     df.columns = df.columns.str.strip()
@@ -429,69 +326,42 @@ def save_all_metrics_text(
 
 
 def main():
-    # ========================================================================
-    # OPTIMIZED RUN: YOLOv8m + 800px + 100 Epochen + Aggressive Augmentation
-    # Best model for aerial person detection!
-    # ========================================================================
-
-    experiment_name = "yolov8m_visdrone_optimized"  # YOLOv8m!
+    experiment_name = "yolov8m_visdrone_optimized"
     exp_dir = setup_experiment_dir(experiment_name)
     run_name = exp_dir.name
 
     data_cfg = PROJECT_ROOT / "cfg" / "visdrone_person.yaml"
     print(f"[train] Using data config: {data_cfg}")
 
-    # Map DEVICE to ultralytics 'device' argument
     if DEVICE.type == "cuda":
         device_arg = DEVICE.index if DEVICE.index is not None else 0
     else:
         device_arg = "cpu"
     print(f"[train] Using device: {DEVICE} (ultralytics arg: {device_arg})")
 
-    # Training configuration (for logging)
     train_config = {
-        "model": "yolov8m.pt",  # ← YOLOv8m (25M parameters)!
+        "model": "yolov8m.pt",
         "dataset": "VisDrone (person only)",
         "epochs": 100,
         "imgsz": 800,
-        "batch": 6,             # VRAM-limitiert
-        "accumulate": 3,        # Gradient Accumulation (effektiv batch=18)
+        "batch": 6,
+        "accumulate": 3,
         "device": str(DEVICE),
         "augmentation": {
             "hsv": {"h": 0.04, "s": 0.9, "v": 0.7},
-            "geometric": {
-                "degrees": 15.0,
-                "scale": 0.9,
-                "translate": 0.3,
-                "perspective": 0.002,
-            },
+            "geometric": {"degrees": 15.0, "scale": 0.9, "translate": 0.3, "perspective": 0.002},
             "mosaic": 1.0,
             "mixup": 0.2,
             "copy_paste": 0.3,
         },
-        "optimizer": {
-            "name": "AdamW",
-            "lr0": 0.02,
-            "lrf": 0.01,
-            "cos_lr": True,
-            "warmup_epochs": 5,
-            "weight_decay": 0.0005,
-        },
-        "detection": {
-            "iou": 0.5,
-        },
+        "optimizer": {"name": "AdamW", "lr0": 0.02, "lrf": 0.01, "cos_lr": True, "warmup_epochs": 5, "weight_decay": 0.0005},
+        "detection": {"iou": 0.5},
         "early_stopping": {"patience": 20},
-        "target_metrics": {
-            "mAP@0.5": "0.55-0.65",
-            "FPS": "≥15",
-            "IDF1": "≥0.55 (tracking stage)",
-            "MOTA": "≥0.35 (tracking stage)",
-        },
+        "target_metrics": {"mAP@0.5": "0.55-0.65", "FPS": "≥15", "IDF1": "≥0.55 (tracking stage)", "MOTA": "≥0.35 (tracking stage)"},
     }
     save_training_config(exp_dir, train_config)
 
-    # ========== YOLOv8m - BEST MODEL! ==========
-    model = YOLO("yolov8m.pt")  # 25M parameters
+    model = YOLO("yolov8m.pt")
     
     print("\n" + "=" * 80)
     print("  🚀 OPTIMIZED TRAINING RUN - BEST MODEL")
@@ -504,17 +374,13 @@ def main():
         epochs=100,
         imgsz=800,
         batch=6,
-        accumulate=3,       # Effektiv batch=18
+        accumulate=3,
         device=device_arg,
         workers=2,
-        amp=True,           # Mixed Precision
-        
-        # Project structure
+        amp=True,
         project=str(exp_dir / "runs"),
         name="train",
         exist_ok=True,
-        
-        # Optimizer (UPGRADED!)
         optimizer='AdamW',
         lr0=0.02,
         lrf=0.01,
@@ -523,11 +389,7 @@ def main():
         warmup_epochs=5,
         warmup_momentum=0.5,
         weight_decay=0.0005,
-        
-        # Cache aus
         cache=False,
-        
-        # AGGRESSIVE Augmentation
         hsv_h=0.04,
         hsv_s=0.9,
         hsv_v=0.7,
@@ -540,16 +402,9 @@ def main():
         scale=0.9,
         translate=0.3,
         perspective=0.002,
-        
-        # IoU für schwierige Aerial-Detektionen
         iou=0.5,
-        
-        # Regularisierung
         close_mosaic=15,
-        
         classes=[0],
-        
-        # Logging
         verbose=True,
         plots=True,
     )
@@ -558,9 +413,7 @@ def main():
     print("  ✓ TRAINING FINISHED")
     print("=" * 80 + "\n")
 
-    # Copy weights to experiment directory
     import shutil
-
     train_dir = exp_dir / "runs" / "train"
     best_weights_run_path = train_dir / "weights" / "best.pt"
     last_weights_run_path = train_dir / "weights" / "last.pt"
@@ -574,30 +427,23 @@ def main():
             shutil.copy(last_weights_run_path, last_dst)
         print(f"[weights] Copied best/last weights to {exp_dir / 'weights'}")
     else:
-        print(
-            "[weights][WARN] best.pt not found in run directory. Skipping weight copy."
-        )
+        print("[weights][WARN] best.pt not found in run directory. Skipping weight copy.")
 
-    # Copy and plot results
     results_csv_run = train_dir / "results.csv"
     if results_csv_run.exists():
         dst_results_csv = exp_dir / "logs" / f"results_{run_name}.csv"
         shutil.copy(results_csv_run, dst_results_csv)
         print("[logs] Copied results.csv ->", dst_results_csv.name)
-
-        # Generate custom plots
         plot_training_metrics(dst_results_csv, exp_dir)
     else:
         print("[logs][WARN] results.csv not found. Skipping custom plots.")
         dst_results_csv = None
 
-    # Validate best model (if available)
     if best_dst.exists() and dst_results_csv is not None:
         print("\n[validation] Running final validation on best model...")
         best_model = YOLO(best_dst)
         val_results = best_model.val(data=str(data_cfg), split="val", plots=True)
 
-        # Save validation metrics
         val_metrics = {
             "precision": float(val_results.box.p[0]),
             "recall": float(val_results.box.r[0]),
@@ -616,16 +462,10 @@ def main():
         print(f"  • mAP@0.5:0.95:  {val_metrics['mAP50-95']:.4f}")
         print(f"  • Metrics saved to: {val_metrics_path}")
 
-        # Training report (best epoch etc.)
         save_final_report(exp_dir, dst_results_csv)
-
-        # Full metrics log (Train + Test) als Textfile
         save_all_metrics_text(exp_dir, dst_results_csv, val_metrics, best_dst)
     else:
-        print(
-            "\n[validation][WARN] best weights or results.csv missing. "
-            "Skipping final validation and report."
-        )
+        print("\n[validation][WARN] best weights or results.csv missing. Skipping final validation and report.")
 
     print(f"\n{'=' * 80}")
     print(f"✓ All results saved to: {exp_dir}")
