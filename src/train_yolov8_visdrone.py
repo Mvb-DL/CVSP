@@ -37,7 +37,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     df = pd.read_csv(results_csv)
     df.columns = df.columns.str.strip()  # Remove whitespace
 
-    run_name = exp_dir.name  # e.g. yolov8m_visdrone_optimized_20251112_084721
+    run_name = exp_dir.name  # e.g. yolov8m_visdrone_optimized_2025...
 
     # Set professional style
     plt.style.use("seaborn-v0_8-darkgrid")
@@ -272,7 +272,7 @@ def plot_training_metrics(results_csv: Path, exp_dir: Path):
     plt.close()
     print("[plot] Saved:", out_path.name)
 
-    # Confusion Matrix (if available)
+    # === FIGURE 4: Confusion Matrix (if available) ===
     confusion_matrix_path = results_csv.parent / "confusion_matrix.png"
     if confusion_matrix_path.exists():
         import shutil
@@ -305,8 +305,8 @@ Run Name: {run_name}
 Dataset: VisDrone (~6K images, person class only)
 Model: YOLOv8m (Medium - 25M parameters)
 Device: {DEVICE}
-Input Size: 800px (multi-scale / strong aug)
-Batch Size: 6
+Input Size: 800px (high-res training)
+Batch Size: 16
 Total Epochs: {len(df)}
 
 BEST MODEL PERFORMANCE (Epoch {best_epoch})
@@ -333,32 +333,33 @@ TRAINING DYNAMICS
 ------------------
   • Total Training Time:     Check ultralytics logs
   • Final Learning Rate:     {df['lr/pg0'].iloc[-1]:.6f}
-  • Early Stopping:          {"Yes" if len(df) < 100 else "No (completed all epochs)"}
+  • Early Stopping:          {"Yes" if len(df) < 70 else "No (completed all epochs)"}
 
 OPTIMIZATION CHANGES FROM BASELINE
 -----------------------------------
-  ✓ Model: YOLOv8n (3M) → YOLOv8m (25M params)  ← 8x more capacity
-  ✓ Resolution: 640px → 800px (more pixels per person)
-  ✓ Epochs: 50 → 100
-  ✓ Optimizer: SGD → AdamW (better for small objects)
-  ✓ Learning rate: 0.01 → 0.02
-  ✓ IoU threshold: 0.7 → 0.5 (more tolerant in aerial scenes)
+  ✓ Model: YOLOv8n (3M) → YOLOv8m (25M params)
+  ✓ Resolution: 640px → 800px
+  ✓ Epochs: 5 → 70
+  ✓ Optimizer: SGD → AdamW
+  ✓ Learning rate: 0.01 → 0.015
+  ✓ IoU threshold: 0.7 → 0.5 (more tolerant for aerial cases)
 
-AUGMENTATION STRATEGY (AGGRESSIVE)
------------------------------------
-  ✓ Strong HSV Color Jitter (h=0.04, s=0.9, v=0.7)
+AUGMENTATION STRATEGY (TUNED)
+------------------------------
+  ✓ Strong but controlled HSV Color Jitter (h=0.03, s=0.85, v=0.6)
       → robust to extreme lighting and neon clothing
   ✓ High-resolution training @ 800px
       → better for small person detection at high altitude
-  ✓ Mosaic 100% + MixUp 20% + Copy-Paste 30%
-      → maximum context variation and small object focus
+  ✓ Mosaic 80% + MixUp 15% + Copy-Paste 20%
+      → strong context variation without over-randomizing
   ✓ Enhanced geometric transforms (rotation, translation, perspective)
       → robust to varying drone angles and movement
   ✓ IoU threshold 0.5 for difficult aerial scenarios
+  ✓ max_det=100 to reduce NMS overhead
 
 NEXT STEPS
 ----------
-1. Test inference speed on RTX A2000 (target: ≥15 FPS @ 800px)
+1. Test inference speed on RTX A2000 / RTX 5000 (target: ≥15 FPS @ 800px)
 2. If FPS too low: export to TensorRT or fallback to YOLOv8s
 3. Add nature/wilderness dataset for fine-tuning (empty-world prior)
 4. Integrate DeepSORT/ByteTrack for multi-object tracking
@@ -373,7 +374,6 @@ FILES GENERATED
   • Last weights:     {exp_dir}/weights/last_{run_name}.pt
   • Training curves:  {exp_dir}/plots/
   • CSV logs:         {exp_dir}/logs/results_{run_name}.csv
-  • Metrics log:      {exp_dir}/logs/all_metrics_{run_name}.txt
 
 =============================================================================
 """
@@ -403,7 +403,6 @@ def save_all_metrics_text(
         f.write(
             "=====================================================================\n"
             "                YOLOv8 Training & Test Metrics (Full Log)\n"
-            "                    OPTIMIZED RUN (YOLOv8m @ 800px)\n"
             "=====================================================================\n\n"
         )
         f.write(f"Run Name: {run_name}\n")
@@ -442,36 +441,37 @@ def main():
         device_arg = "cpu"
     print(f"[train] Using device: {DEVICE} (ultralytics arg: {device_arg})")
 
-    # Training configuration (for logging only)
+    # Training configuration (for logging)
     train_config = {
         "model": "yolov8m.pt",
         "dataset": "VisDrone (person only)",
-        "epochs": 100,
+        "epochs": 70,
         "imgsz": 800,
-        "batch": 6,
+        "multi_scale": False,
+        "batch": 16,
         "device": str(DEVICE),
         "augmentation": {
-            "hsv": {"h": 0.04, "s": 0.9, "v": 0.7},
+            "hsv": {"h": 0.03, "s": 0.85, "v": 0.6},
             "geometric": {
                 "degrees": 15.0,
-                "scale": 0.9,
-                "translate": 0.3,
+                "scale": 0.85,
+                "translate": 0.25,
                 "perspective": 0.002,
             },
-            "mosaic": 1.0,
-            "mixup": 0.2,
-            "copy_paste": 0.3,
+            "mosaic": 0.8,
+            "mixup": 0.15,
+            "copy_paste": 0.2,
         },
         "optimizer": {
             "name": "AdamW",
-            "lr0": 0.02,
+            "lr0": 0.015,
             "lrf": 0.01,
             "cos_lr": True,
-            "warmup_epochs": 5,
+            "warmup_epochs": 4,
             "weight_decay": 0.0005,
         },
-        "detection": {"iou": 0.5},
-        "early_stopping": {"patience": 20},
+        "detection": {"iou": 0.5, "max_det": 100},
+        "early_stopping": {"patience": 15},
         "target_metrics": {
             "mAP@0.5": "0.55-0.65",
             "FPS": "≥15",
@@ -481,57 +481,57 @@ def main():
     }
     save_training_config(exp_dir, train_config)
 
-    # Initialize YOLOv8m
+    # Initialize model
     model = YOLO("yolov8m.pt")
 
     print("\n" + "=" * 80)
-    print("  🚀 OPTIMIZED TRAINING RUN")
-    print("  Model: YOLOv8m (25M params) | Resolution: 800px | Epochs: 100")
-    print("  Optimizer: AdamW | IoU=0.5 | Mosaic=1.0 | Strong Augmentation")
+    print("  🚀 OPTIMIZED TRAINING RUN (RUN 2)")
+    print("  Model: YOLOv8m (25M params) | Resolution: 800px | Epochs: 70")
+    print("  Optimizer: AdamW | IoU=0.5 | Mosaic=0.8 | Strong-but-stable Augmentation")
     print("=" * 80 + "\n")
 
-    # NOTE: 'accumulate' is NOT a valid argument in this Ultralytics version,
-    # so we simply omit it here.
     results = model.train(
         data=str(data_cfg),
-        epochs=100,
+        epochs=70,
         imgsz=800,
-        batch=6,
+        batch=16,
         device=device_arg,
-        workers=2,
-        amp=True,  # mixed precision
+        workers=4,
+        amp=True,
         # Project structure
         project=str(exp_dir / "runs"),
         name="train",
         exist_ok=True,
-        # Optimization / scheduler
+        # Optimization
         optimizer="AdamW",
-        lr0=0.02,
+        lr0=0.015,
         lrf=0.01,
         cos_lr=True,
-        patience=20,
-        warmup_epochs=5,
+        patience=15,
+        warmup_epochs=4,
         warmup_momentum=0.5,
         weight_decay=0.0005,
-        # No extra caching (800px + big model)
+        # Cache
         cache=False,
         # Augmentation
-        hsv_h=0.04,
-        hsv_s=0.9,
-        hsv_v=0.7,
+        hsv_h=0.03,
+        hsv_s=0.85,
+        hsv_v=0.6,
         degrees=15.0,
         flipud=0.0,
         fliplr=0.5,
-        mosaic=1.0,
-        mixup=0.2,
-        copy_paste=0.3,
-        scale=0.9,
-        translate=0.3,
+        mosaic=0.8,
+        mixup=0.15,
+        copy_paste=0.2,
+        scale=0.85,
+        translate=0.25,
         perspective=0.002,
-        # Detection / training behaviour
+        # Detection / NMS behavior
         iou=0.5,
+        max_det=100,
+        # Regularization
         close_mosaic=15,
-        classes=[0],  # person only
+        classes=[0],  # Person only
         # Logging
         verbose=True,
         plots=True,
@@ -589,7 +589,9 @@ def main():
             "fitness": float(val_results.fitness),
         }
 
-        val_metrics_path = exp_dir / "logs" / f"validation_metrics_{run_name}.json"
+        val_metrics_path = (
+            exp_dir / "logs" / f"validation_metrics_{run_name}.json"
+        )
         with open(val_metrics_path, "w", encoding="utf-8") as f:
             json.dump(val_metrics, f, indent=2)
         print(f"\n[validation] Final Metrics:")
@@ -599,8 +601,10 @@ def main():
         print(f"  • mAP@0.5:0.95:  {val_metrics['mAP50-95']:.4f}")
         print(f"  • Metrics saved to: {val_metrics_path}")
 
-        # Training report and full metrics log
+        # Training report (best epoch etc.)
         save_final_report(exp_dir, dst_results_csv)
+
+        # Full metrics log (Train + Test) als Textfile
         save_all_metrics_text(exp_dir, dst_results_csv, val_metrics, best_dst)
     else:
         print(
