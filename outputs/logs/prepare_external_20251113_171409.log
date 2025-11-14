@@ -1,0 +1,45 @@
+2025-11-13 17:14:09,704 INFO: Logging to C:\Users\mario\OneDrive\Desktop\CVSP\outputs\logs\prepare_external_20251113_171409.log
+2025-11-13 17:14:09,704 INFO: ssd-root     : D:\data
+2025-11-13 17:14:09,704 INFO: external-root: D:\data\external
+2025-11-13 17:14:09,704 INFO: project-root : C:\Users\mario\OneDrive\Desktop\CVSP
+2025-11-13 17:14:09,704 INFO: cfg-root     : C:\Users\mario\OneDrive\Desktop\CVSP\cfg
+2025-11-13 17:14:09,704 INFO: ================================================================================
+2025-11-13 17:14:09,704 INFO: DATASET: SARD
+2025-11-13 17:14:09,705 INFO:   source: D:\data\external\SARD
+2025-11-13 17:14:09,705 INFO:   output: D:\data\SARDYOLO
+2025-11-13 17:14:09,705 INFO: ================================================================================
+2025-11-13 17:14:10,788 INFO: Detected Roboflow-style YOLO (data.yaml present).
+2025-11-13 17:14:10,789 INFO: [roboflow] Source: D:\data\external\SARD
+2025-11-13 17:14:10,789 INFO: [roboflow] Using person class index: 0
+2025-11-13 17:14:10,811 INFO: [roboflow] Split train: 4041 images
+2025-11-13 17:15:52,614 INFO: [roboflow] Split val: 1144 images
+2025-11-13 17:16:14,946 INFO: [roboflow] Wrote C:\Users\mario\OneDrive\Desktop\CVSP\cfg\sardyolo.yaml
+2025-11-13 17:16:14,947 INFO: ================================================================================
+2025-11-13 17:16:14,947 INFO: DATASET: HERIDAL
+2025-11-13 17:16:14,947 INFO:   source: D:\data\external\HERIDAL
+2025-11-13 17:16:14,947 INFO:   output: D:\data\HERIDALYOLO
+2025-11-13 17:16:14,948 INFO: ================================================================================
+2025-11-13 17:16:15,849 INFO: Detected Roboflow-style YOLO (data.yaml present).
+2025-11-13 17:16:15,849 INFO: [roboflow] Source: D:\data\external\HERIDAL
+2025-11-13 17:16:15,850 INFO: [roboflow] Using person class index: 0
+2025-11-13 17:16:15,856 INFO: [roboflow] Split train: 1124 images
+2025-11-13 17:20:09,106 INFO: [roboflow] Split val: 313 images
+2025-11-13 17:21:13,736 INFO: [roboflow] Wrote C:\Users\mario\OneDrive\Desktop\CVSP\cfg\heridalyolo.yaml
+2025-11-13 17:21:13,736 INFO: ================================================================================
+2025-11-13 17:21:13,736 INFO: DATASET: NTUT4K
+2025-11-13 17:21:13,737 INFO:   source: D:\data\external\NTUT4K
+2025-11-13 17:21:13,737 INFO:   output: D:\data\NTUT4KYOLO
+2025-11-13 17:21:13,737 INFO: ================================================================================
+2025-11-13 17:21:14,816 INFO: No annotations found — treating as negative-only.
+2025-11-13 17:21:14,817 INFO: [neg] Source: D:\data\external\NTUT4K
+2025-11-13 17:51:42,510 INFO: [neg] Wrote C:\Users\mario\OneDrive\Desktop\CVSP\cfg\ntut4kyolo.yaml
+2025-11-13 17:51:42,511 INFO: ================================================================================
+2025-11-13 17:51:42,511 INFO: DATASET: ZENODO7740081
+2025-11-13 17:51:42,511 INFO:   source: D:\data\external\ZENODO7740081
+2025-11-13 17:51:42,511 INFO:   output: D:\data\ZENODOYOLO
+2025-11-13 17:51:42,512 INFO: ================================================================================
+2025-11-13 17:51:43,386 INFO: No annotations found — treating as negative-only.
+2025-11-13 17:51:43,386 INFO: [neg] Source: D:\data\external\ZENODO7740081
+2025-11-13 17:51:43,387 WARNING: [neg] No images found.
+2025-11-13 17:51:43,388 INFO: [mix] Wrote combined YAML: C:\Users\mario\OneDrive\Desktop\CVSP\cfg\sar_person_mix.yaml
+2025-11-13 17:51:43,389 INFO: All done ✔

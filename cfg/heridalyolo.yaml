@@ -1,0 +1,5 @@
+path: D:/data/HERIDALYOLO
+train: images/train
+val: images/val
+names:
+  0: person

@@ -1,0 +1,11 @@
+# C:\Users\mario\OneDrive\Desktop\CVSP\cfg\sar_posneg_mix.yaml
+train:
+  - D:/data/SARDYOLO/images/train
+  - D:/data/HERIDALYOLO/images/train
+  - D:/data/NTUT4KYOLO/images/train
+val:
+  - D:/data/SARDYOLO/images/val
+  - D:/data/HERIDALYOLO/images/val
+  - D:/data/NTUT4KYOLO/images/val
+names:
+  0: person

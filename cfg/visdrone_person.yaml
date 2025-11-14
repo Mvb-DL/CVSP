@@ -1,6 +1,5 @@
 # cfg/visdrone_person.yaml
-
-path: data/VisdroneYOLO
+path: "D:/data/VisdroneYOLO"
 
 train: images/train
 val: images/val
