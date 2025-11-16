@@ -374,3 +374,16 @@
 
 
 *Stand: 14.11.2025*
+
+
+Neuer Visdrone Baseline-Modell
+
+| Metric       | old_stage1 | new_stage1 | Δ absolut | Δ relativ (ca.) |
+| ------------ | ---------: | ---------: | --------: | --------------: |
+| Precision    |     0.6843 |     0.7327 |   +0.0484 |          ≈ +7 % |
+| Recall       |     0.5113 |     0.5706 |   +0.0593 |         ≈ +12 % |
+| mAP@0.5      |     0.5544 |     0.6297 |   +0.0753 |      ≈ +13–14 % |
+| mAP@0.5–0.95 |     0.2132 |     0.2680 |   +0.0548 |      ≈ +25–26 % |
+
+https://www.mdpi.com/2504-446X/9/8/514
+Source für das neue Baseline-Modell!
