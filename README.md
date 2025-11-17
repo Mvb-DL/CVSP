@@ -1,11 +1,7 @@
----
-
 # CHANGELOG — SAR Person Detection (YOLOv8)
 
 > Lückenlose, **rein faktische** Verlaufs- und Änderungsdokumentation aller Trainings-, Validierungs- und Benchmark-Läufe (ohne Begründungen / Interpretation).
 > Zeitraum: **November 2025**
-
----
 
 ## 0) Infrastruktur & Umgebung
 
