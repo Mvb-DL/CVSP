@@ -1064,3 +1064,90 @@ Insgesamt deutet die Gesamtschau darauf hin, dass das System – insbesondere in
    In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
    (Grundlegende Arbeit zum Hard-Negative-/Hard-Example-Mining, relevant für Strategien zur Reduktion von False Positives.)
 
+### Learnings
+
+---
+
+### 1. Daten & Domänenverständnis
+
+* Ein starkes, breit trainiertes VisDrone-Personenmodell ist eine extrem gute Basis für SAR – deutlich wichtiger als kleine Architektur-Tricks am Anfang.
+* SAR ist keine eigene „Magie-Domäne“, sondern eine Verschiebung: weniger urbane Szenen, mehr Landschaft, andere Perspektiven, kleinere und oft teilverdeckte Personen.
+* VisDrone bleibt auch für SAR hilfreich: das Modell lernt dort robuste Person-Merkmale, die später in SARD/HERIDAL noch verfeinert werden können.
+* HERIDAL und SARD sind inhaltlich sehr unterschiedlich: SARD eher strukturiert/„klar“, HERIDAL deutlich wilder, unübersichtlicher und dadurch für das Modell sichtbar härter.
+* Ein eigener negativer Datensatz (NTUT4K) ist für FP-Kontrolle Gold wert: das Modell lernt explizit, wie „nur Landschaft, keine Menschen“ aussieht – das ist fast so wichtig wie positive Beispiele.
+
+---
+
+### 2. Architektur vs. Training – was wirklich zählt
+
+* Das Basismodell YOLOv8m reicht von der Kapazität her aus; der Großteil der Leistungsgewinne kam durch Daten und Trainingsstrategie, nicht durch exotische Architekturen.
+* Die DCE-Variante zeigt: eine spezialisierte Architektur kann auf SARD klar gewinnen, verliert aber deutlich an Generalität auf VisDrone. Architekturänderungen sind also scharf domänengekoppelt.
+* Fazit: Architektur-Tuning lohnt sich vor allem dann, wenn ein sehr klar umrissener Ziel-Datensatz im Fokus steht (z. B. SARD), weniger als allgemeine „One-size-fits-all“-Lösung.
+
+---
+
+### 3. Trainingsstrategie & Stages
+
+* Der Drei-Stufen-Ansatz hat sich bewährt:
+
+  1. Allgemeine Personendetektion auf VisDrone,
+  2. Re-Finetuning,
+  3. SAR-spezifisches Finetuning auf SARD/HERIDAL (plus Negativdaten).
+* Kurze, gezielte Finetuning-Phasen nach einem starken Basismodell bringen sehr viel – deutlich mehr als noch ein komplett neuer „from scratch“-Versuch.
+* Zu starke Spezialisierung auf SAR kann das allgemeine Verhalten verschlechtern (z. B. VisDrone-Performance), der Trade-off zwischen Spezialisierung und Generalität ist real.
+* Mehr Epochen sind nicht automatisch besser: ab einem gewissen Punkt verschiebt sich das Modell nur noch in Richtung der letzten Daten (z. B. SARD/HERIDAL) und verliert an Allround-Fähigkeit.
+
+---
+
+### 4. False Positives & Umgang mit Negativdaten
+
+* Ohne explizite Negativdaten tendiert ein starkes Personendetektionsmodell dazu, in Landschaften „überall“ Personen zu sehen.
+* Ein großer, sauberer Negativsatz (NTUT4K) ist extrem wirksam, um das Modell zu „disziplinieren“: Es lernt, dass Gras, Fels, Bäume und Strukturen ohne Menschen eben auch „nichts“ bedeuten können.
+* FP-Reduktion ist nicht nur eine Frage des Confidence-Thresholds, sondern vor allem eine Frage des Trainings: das Modell muss Hintergründe tatsächlich kennen lernen, nicht nur „unsicherer werden“.
+* Zu aggressives Negativtraining kann das Modell aber auch zu vorsichtig machen – der Punkt ist Balance: genug Negativbeispiele, ohne echte Personen „wegzuerziehen“.
+
+---
+
+### 5. Thresholds, Heuristiken & Live-Betrieb
+
+* Ein fester, „sicherer“ Confidence-Threshold ist ein wichtiges Stellrad, um FP im Feld zu kontrollieren; hohe Thresholds kosten Recall, bringen aber oft deutlich bessere Interpretierbarkeit für den Operator.
+* Konfidenz allein reicht nicht: zusätzliche Heuristiken wie Mindest-Boxfläche oder Entfernung von extrem kleinen/länglichen Boxen helfen, typische SAR-FPs loszuwerden (Grasbüschel, Strukturen, Texturen).
+* Die optimale Konfiguration hängt vom Modus ab:
+
+  * Suchmodus: eher niedriger Threshold, dafür mehr FPs akzeptabel,
+  * Bestätigungs-/Entscheidungsmodus: höherer Threshold, stärker gefilterte Detections.
+* Die Live-Video-Pipeline mit Metriken (Detektionen/Frame, FPS, Laufzeit) ist entscheidend, um Verhalten im Realbetrieb zu verstehen – Papiermetriken alleine reichen nicht.
+
+---
+
+### 6. Multi-Dataset-Benchmarking & Werkzeuge
+
+* Ein einheitliches Benchmark-Skript über alle Modelle und Datensätze (inkl. FP-only-Fallback) ist extrem wertvoll: Entscheidungen lassen sich nicht mehr aus Einzelruns oder Bauchgefühl ableiten, sondern konsistent vergleichen.
+* FP-only-Bewertung auf rein negativen Sets ist ein wichtiges zusätzliches Qualitätsmaß, das in klassischen Papers selten erscheint, aber für reale SAR-Systeme zentral ist.
+* Val-Only-Modus, stabilisierte Batch-/Worker-Settings und sauber versionierte Configs verhindern, dass Verbesserungen nur aus Zufall oder instabilen Umgebungen stammen.
+* Ohne diese Tooling-Schicht wäre es nahezu unmöglich gewesen, Architekturideen (DCE) und Trainingsstrategien (Recall-Push, Negativ-Mix, etc.) wirklich fair zu vergleichen.
+
+---
+
+### 7. Rollen der einzelnen Modelle
+
+* `new_stage1` (VisDrone-Basis) eignet sich hervorragend als universelle Personen-Engine: stark in urbanen und gemischten Szenen, gute Ausgangsbasis.
+* SAR-spezifische Stage-3-Modelle (SARD/HERIDAL-Finetuning) verschieben den Schwerpunkt hin zu Suche in unübersichtlichem Gelände, akzeptieren aber ein Stück weit, dass „klassische“ Drohnenszenen nicht mehr optimal sind.
+* DCE-Modelle sind besonders geeignet, wenn SARD im Zentrum steht und andere Domänen zweitrangig sind.
+* Für reale Einsätze ist die Kombination entscheidend: starkes Basismodell + SAR-Finetuning + Negativdaten + geschickte Inferenz-Heuristiken.
+
+---
+
+### 8. Offene Punkte & weiterer Nutzen
+
+* HERIDAL bleibt der schwierigste Datensatz: dichter Bewuchs, Tarnung, kleine Ziele. Hier liegt das größte verbliebene Verbesserungspotenzial – etwa durch speziellere Augmentierung, Fokus-Finetuning oder zusätzliche Daten.
+* Tracking ist noch nicht vollständig integriert, aber die Zielmetriken sind in Reichweite, wenn die vorhandenen Detektoren sauber an ByteTrack/DeepSORT angebunden werden.
+* Der Gesamtprozess (Datenaufbereitung, Stage-Design, Architektur-Variation, Negativtraining, Benchmarking) ist selbst ein wichtiges Ergebnis: er ist wiederverwendbar für andere UAV-/SAR-Projekte.
+
+---
+
+### Kurz-Fazit
+
+* Die größten Gewinne kamen nicht durch „exotische Netze“, sondern durch eine saubere Pipeline: starkes Basismodell, sinnvolle Stages, passende Datensätze und systematisches Benchmarking.
+* DCE-Architektur und Negativdaten zeigen, dass zielgerichtete Anpassungen in klar definierten Domänen (SARD, Landschaft) sehr große Effekte haben können, wenn sie nicht losgelöst, sondern eingebettet in eine starke Basis und eine gute Trainingsstrategie eingesetzt werden.
+* Die Arbeit liefert nicht nur ein einzelnes gutes Modell, sondern ein konsistentes Vorgehen, wie man aus allgemeinen UAV-Personenmodellen robuste, SAR-taugliche Systeme mit kontrollierbarer FP-Rate ableiten kann.
