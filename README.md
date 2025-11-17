@@ -1,7 +1,3 @@
-Hier ist ein aufgeräumtes, aktualisiertes Markdown mit **allen** aktuellen Ständen, inkl. DCE, neuen Stage-1/Stage-3-Modellen, Benchmarks, Conf-Sweeps und Inferenz-Script.
-
-Du kannst das so direkt in deine Doku übernehmen.
-
 ---
 
 # CHANGELOG — SAR Person Detection (YOLOv8)
