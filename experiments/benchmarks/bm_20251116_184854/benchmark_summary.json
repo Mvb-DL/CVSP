@@ -1,0 +1,26 @@
+{
+  "old_stage1": {
+    "visdrone": {
+      "model": "old_stage1",
+      "dataset": "visdrone",
+      "precision": 0.6842675317414908,
+      "recall": 0.5112749659961343,
+      "mAP50": 0.5543512062980616,
+      "mAP50-95": 0.21317305995964123,
+      "fitness": 0.21317305995964123,
+      "mode": "GT"
+    }
+  },
+  "new_stage1": {
+    "visdrone": {
+      "model": "new_stage1",
+      "dataset": "visdrone",
+      "precision": 0.7326791482708724,
+      "recall": 0.5705715088281621,
+      "mAP50": 0.6296553272386881,
+      "mAP50-95": 0.26799648371601736,
+      "fitness": 0.26799648371601736,
+      "mode": "GT"
+    }
+  }
+}

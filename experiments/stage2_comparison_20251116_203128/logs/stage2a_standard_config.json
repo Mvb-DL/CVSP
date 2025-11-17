@@ -1,0 +1,25 @@
+{
+  "variant": "standard",
+  "stage1_weights": "checkpoints\\best.pt",
+  "data": "cfg/sar_pos_only.yaml",
+  "epochs": 50,
+  "batch": 4,
+  "imgsz": 800,
+  "device": "cuda:0",
+  "workers": 2,
+  "optimizer": "AdamW",
+  "lr0": 0.003,
+  "lrf": 0.01,
+  "patience": 15,
+  "augmentation": {
+    "hsv_h": 0.03,
+    "hsv_s": 0.8,
+    "hsv_v": 0.6,
+    "degrees": 8.0,
+    "translate": 0.2,
+    "scale": 0.85,
+    "mosaic": 0.15,
+    "mixup": 0.0,
+    "copy_paste": 0.1
+  }
+}

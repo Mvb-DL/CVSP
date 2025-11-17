@@ -57,6 +57,7 @@ def _resolve_val_dirs_from_yaml(yaml_path: Path) -> list[Path]:
             p = root / v
         out_dirs.append(p)
 
+    # Fallback für klassische YOLO-Struktur
     if not out_dirs and root is not None:
         out_dirs = [root / "images" / "val"]
 
@@ -87,7 +88,7 @@ def _fp_only_eval(m: YOLO, sources: list[Path], imgsz: int, conf: float, iou: fl
             verbose=False,
         )
         for r in preds_gen:
-            n = 0 if getattr(r, "boxes", None) is None else int(len(r.boxes))
+            n = 0 if r.boxes is None else int(len(r.boxes))
             total_imgs += 1
             total_preds += n
             if n > max_per_img:
@@ -114,7 +115,7 @@ def _run_validation(weights_path: Path, args, device_arg, exp_dir: Path):
     print("\n[validation] Running validation …")
     m = YOLO(str(weights_path))
     try:
-        # Standard-Validierung (funktioniert nur mit gelabelten Datasets)
+        # Standard-Validierung (funktioniert NUR mit gelabelten Datasets)
         val = m.val(
             data=str(args.data),
             split="val",
@@ -127,14 +128,9 @@ def _run_validation(weights_path: Path, args, device_arg, exp_dir: Path):
             device=device_arg,
         )
 
-        # Robust prüfen, ob es GT-Labels gab
+        # Prüfen, ob es überhaupt GT-Labels gab (sonst leere Arrays)
         p = getattr(val.box, "p", None)
-        has_labels = False
-        try:
-            has_labels = p is not None and (len(p) > 0)  # numpy/torch arrays sind len()-fähig
-        except Exception:
-            pass
-        if not has_labels:
+        if p is None or (hasattr(p, "size") and p.size == 0):
             raise ValueError("No GT labels found in val set")
 
         metrics = {
@@ -165,6 +161,19 @@ def _run_validation(weights_path: Path, args, device_arg, exp_dir: Path):
         print(f"[validation] Saved to: {outp}")
 
 
+def _unique_path(dst: Path) -> Path:
+    """Erzeugt bei Bedarf eine eindeutige Zieldatei (…_1.pt, …_2.pt, …)."""
+    if not dst.exists():
+        return dst
+    stem, suf = dst.stem, dst.suffix
+    i = 1
+    while True:
+        cand = dst.with_name(f"{stem}_{i}{suf}")
+        if not cand.exists():
+            return cand
+        i += 1
+
+
 # ---------------------------------------------------------------------
 # Main
 # ---------------------------------------------------------------------
@@ -172,11 +181,11 @@ def _run_validation(weights_path: Path, args, device_arg, exp_dir: Path):
 def main():
     ap = argparse.ArgumentParser(description="Stage-3 SAR Finetuning & Validation (YOLOv8m, RTX A2000-safe)")
     ap.add_argument("--data", type=Path, default=PROJECT_ROOT / "cfg" / "sar_person_mix.yaml")
-    ap.add_argument("--weights", type=Path, required=True, help="Pfad zu best.pt oder last.pt")
+    ap.add_argument("--weights", type=Path, required=True, help="Pfad zu best.pt (Startgewichte)")
     ap.add_argument("--epochs", type=int, default=20)
     ap.add_argument("--batch", type=int, default=6)     # RTX A2000-safe
     ap.add_argument("--imgsz", type=int, default=800)
-    ap.add_argument("--resume", action="store_true", help="Resume from last.pt (behält Optimizer/EMA)")
+    ap.add_argument("--freeze", type=int, default=0, help="Erste N Layer einfrieren (Ultralytics freeze)")
 
     # Validation / Val-only
     ap.add_argument("--val-only", action="store_true", help="Nur validieren, nicht trainieren")
@@ -187,9 +196,19 @@ def main():
     ap.add_argument("--val-conf", type=float, default=0.25)
     ap.add_argument("--val-iou", type=float, default=0.50)
 
+    # Checkpoint-Kopie
+    ap.add_argument("--checkpoint-dir", type=Path, default=PROJECT_ROOT / "checkpoints",
+                    help="Wohin best.pt zusätzlich kopiert wird")
+    ap.add_argument("--checkpoint-name", type=str, default=None,
+                    help="Dateiname der Best-Kopie (Standard: stage3_<yaml-stem>_<epochs>ep_best.pt)")
+    
+    ap.add_argument("--skip-epoch-val", action="store_true",
+                help="Deaktiviert die integrierte Validation nach jeder Epoche (spart VRAM)")
+
+
     args = ap.parse_args()
 
-    # Experiment-Ordner (für unsere Reports/Kopien)
+    # Experiment-Ordner
     ts = datetime.now().strftime("%Y%m%d_%H%M%S")
     tag = "VAL" if args.val_only else ""
     exp_dir = PROJECT_ROOT / "experiments" / f"yolov8m_sar_stage3_ft_{tag}_{ts}".strip("_")
@@ -200,7 +219,7 @@ def main():
     # Device-Mapping
     device_arg = _device_arg_from_torch_device(DEVICE)
 
-    # -------- Val-only Modus --------
+    # Banner
     if args.val_only:
         print("\n" + "=" * 80)
         print("  🔎 LIGHT VALIDATION (no training)")
@@ -217,22 +236,11 @@ def main():
     # --------------------------
     # TRAINING
     # --------------------------
+    # Windows/8GB-sichere Loader-Settings
     is_windows = platform.system().lower().startswith("win")
+    workers = 2 if is_windows else 4
+    batch = args.batch
 
-    # HERIDAL-sichere, konservative Augs/LR – aktiviert wenn im --data Pfad "heridal" vorkommt
-    is_heridal = "heridal" in str(args.data).lower()
-
-    lr0        = 0.002 if is_heridal else 0.003
-    mosaic     = 0.0   if is_heridal else 0.15
-    mixup      = 0.0
-    copy_paste = 0.05  if is_heridal else 0.1
-    degrees    = 6.0   if is_heridal else 8.0
-    scale      = 0.90  if is_heridal else 0.85
-    translate  = 0.15  if is_heridal else 0.20
-    workers    = 2 if is_windows else 4
-    batch      = args.batch
-
-    # Trainingskonfig (für Nachvollziehbarkeit abspeichern)
     cfg = {
         "stage": "SAR-stage3-finetune",
         "data": str(args.data),
@@ -242,15 +250,15 @@ def main():
         "imgsz": args.imgsz,
         "device": str(DEVICE),
         "workers": workers,
-        "resume": bool(args.resume),
         "aug": {
             "hsv_h": 0.03, "hsv_s": 0.8, "hsv_v": 0.6,
-            "degrees": degrees, "scale": scale, "translate": translate,
-            "mosaic": mosaic, "mixup": mixup, "copy_paste": copy_paste, "close_mosaic": 3
+            "degrees": 8.0, "scale": 0.85, "translate": 0.2,
+            "mosaic": 0.15, "mixup": 0.0, "copy_paste": 0.1, "close_mosaic": 3
         },
-        "optim": {"opt": "AdamW", "lr0": lr0, "lrf": 0.01, "cos_lr": True,
+        "optim": {"opt": "AdamW", "lr0": 0.003, "lrf": 0.01, "cos_lr": True,
                   "warmup_epochs": 1, "weight_decay": 5e-4, "patience": 8, "nbs": 64},
-        "inference": {"iou": 0.5, "max_det": 150}
+        "inference": {"iou": 0.5, "max_det": 150},
+        "freeze": args.freeze,
     }
     with open(exp_dir / "training_config.json", "w", encoding="utf-8") as f:
         json.dump(cfg, f, indent=2)
@@ -259,14 +267,11 @@ def main():
     print("  🚀 STAGE-3 SAR FINETUNE (RTX A2000 safe)")
     print(f"  data:   {args.data}")
     print(f"  start:  {args.weights}")
-    print(f"  epochs: {args.epochs} | imgsz: {args.imgsz} | batch: {batch} | workers: {workers} | resume: {bool(args.resume)}")
+    print(f"  epochs: {args.epochs} | imgsz: {args.imgsz} | batch: {batch} | workers: {workers} | freeze: {args.freeze}")
     print("=" * 80 + "\n")
 
-    # Modell laden
     model = YOLO(str(args.weights))
-
-    # Trainingsargumente aufbauen (Resume überschreibt project/name)
-    train_kwargs = dict(
+    results = model.train(
         data=str(args.data),
         epochs=args.epochs,
         imgsz=args.imgsz,
@@ -274,48 +279,39 @@ def main():
         device=device_arg,
         workers=workers,
         amp=True,
+        project=str(exp_dir / "runs"),
+        name="train",
+        exist_ok=True,
+        # Optimizer / Schedules
         optimizer="AdamW",
-        lr0=lr0, lrf=0.01, cos_lr=True, nbs=64,
+        lr0=0.003, lrf=0.01, cos_lr=True, nbs=64,
         patience=8,
         warmup_epochs=1,
         warmup_momentum=0.5,
         weight_decay=0.0005,
         cache=False,  # RAM/VRAM-schonend
+        # Augmentations (konservativ für Finetune)
         hsv_h=0.03, hsv_s=0.8, hsv_v=0.6,
-        degrees=degrees, flipud=0.0, fliplr=0.5,
-        mosaic=mosaic, mixup=mixup, copy_paste=copy_paste,
-        scale=scale, translate=translate, perspective=0.002,
+        degrees=8.0, flipud=0.0, fliplr=0.5,
+        mosaic=0.15, mixup=0.0, copy_paste=0.1,
+        scale=0.85, translate=0.2, perspective=0.002,
         close_mosaic=3,
+        # Detection-only, 1 Klasse
         classes=[0],
+        # Inferenz-Parameter (Validierungsphase)
         iou=0.5, max_det=150,
         verbose=True,
         plots=True,
+        # NEW: Freeze first N layers
+        freeze=args.freeze,
+        val=not args.skip_epoch_val,
     )
 
-    if args.resume:
-        # Beim Resume NICHT project/name setzen – YOLO hängt an den Original-Run an
-        train_kwargs["resume"] = True
-    else:
-        train_kwargs["project"] = str(exp_dir / "runs")
-        train_kwargs["name"] = "train"
-        train_kwargs["exist_ok"] = True
-
-    # Training ausführen
-    results = model.train(**train_kwargs)
-
-    # Run-Verzeichnis herausfinden (robust für neue Runs und Resume)
-    run_dir: Path
-    try:
-        save_dir = getattr(getattr(model, "trainer", None), "save_dir", None)
-        run_dir = Path(save_dir) if save_dir else (exp_dir / "runs" / "train")
-    except Exception:
-        run_dir = exp_dir / "runs" / "train"
-
     # Artefakte kopieren
+    run_dir = exp_dir / "runs" / "train"
     best = run_dir / "weights" / "best.pt"
     last = run_dir / "weights" / "last.pt"
 
-    # Einheitliche Namen für diese Session
     if best.exists():
         shutil.copy(best, exp_dir / "weights" / f"best_{exp_dir.name}.pt")
     if last.exists():
@@ -342,6 +338,19 @@ def main():
         _run_validation(best_path, val_args, device_arg, exp_dir)
     else:
         print("[validation][WARN] best weights not found.")
+
+    # --------------------------
+    # CHECKPOINT-Kopie in PROJECT_ROOT/checkpoints
+    # --------------------------
+    if best_path.exists():
+        ckpt_dir = Path(args.checkpoint_dir)
+        ckpt_dir.mkdir(parents=True, exist_ok=True)
+        yaml_stem = Path(args.data).stem.lower()
+        default_name = f"stage3_{yaml_stem}_{args.epochs}ep_best.pt"
+        out_name = args.checkpoint_name or default_name
+        dst = _unique_path(ckpt_dir / out_name)
+        shutil.copy(best_path, dst)
+        print(f"[checkpoint] Copied BEST to: {dst}")
 
     print("\n" + "=" * 80)
     print(f"✓ All results saved to: {exp_dir}")

@@ -3,3 +3,12 @@ yolo*
 *cpython*
 
 *venv*/
+*runs*/
+
+*backup*
+
+*checkpoints*
+
+*weights*
+*mp4*
+*webm*
