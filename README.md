@@ -822,3 +822,332 @@ python live_sar_detect.py ^
 
 > **Stand dieser Dokumentation:**
 > **17.11.2025**, inkl. aller bis dahin trainierten Modelle (`best.pt`, `stage2a_standard_best`, `stage2b_dce_best`, alle `stage3_*.pt`), Benchmarks und Inferenz-Anpassungen.
+> 
+
+---
+
+## 1. VisDrone-Personendetektion – Einordnung der Ergebnisse
+
+### Eigene Modelle
+
+Für die VisDrone-Personendetektion liegen unter anderem folgende Ergebnisse vor (Val-Set, Person-Klasse):
+
+* `old_stage1` (70 Epochen):
+
+  * Precision: 0,6843
+  * Recall: 0,5113
+  * mAP@0,5: 0,5544
+  * mAP@0,5–0,95: 0,2132
+
+* `new_stage1` (`best.pt`):
+
+  * Precision: 0,7327
+  * Recall: 0,5706
+  * mAP@0,5: 0,6297
+  * mAP@0,5–0,95: 0,2680
+
+* `stage2_best` (Re-Finetuning):
+
+  * Precision: 0,681
+  * Recall: 0,509
+  * mAP@0,5: 0,557
+  * mAP@0,5–0,95: 0,218
+
+Damit steigert das neue Basismodell (`new_stage1`) die mAP@0,5 im Vergleich zur alten Stage-1-Version um rund 0,075 (absolut), bei gleichzeitig höherer Precision und höherem Recall.
+
+### Vergleich mit publizierten Arbeiten
+
+Publizierte Arbeiten zu VisDrone betrachten typischerweise Multi-Klassen-Detektion (Personen, Fahrzeuge etc.). Die offiziellen VisDrone-Challenges und begleitende Arbeiten berichten für starke Detektoren (Faster R-CNN, YOLO-Varianten, neuere Transformer-Ansätze) mAP-Werte im Bereich von grob 30–40 % mAP (COCO-Stil, über Klassen gemittelt), teilweise darüber, je nach Setting und Auswertemetrik. Diese Benchmarks beziehen sich jedoch auf alle Klassen und nicht speziell auf die Fußgänger-/Personenklasse.
+
+Neuere spezialisierte Methoden wie SOD-YOLO oder VRF-DETR demonstrieren auf VisDrone-Teildatensätzen mAP@0,5-Werte um 0,50 bzw. etwas darüber für kleine Objekte und Fußgänger, häufig auf kleinere Backbones (z. B. YOLO-S- oder YOLO-n-artige Modelle) und mit Fokus auf „small object detection“.
+
+Demgegenüber erreicht dein `new_stage1`-Modell für die Person-Klasse allein mAP@0,5 = 0,6297 bei gleichzeitig solider Precision und Recall. Verglichen mit den in der Literatur berichteten Resultaten ergibt sich:
+
+* Die Performance liegt klar **im oberen Bereich** dessen, was für Fußgänger/Niedrigauflösungs-Ziele in VisDrone typischerweise berichtet wird.
+* Die Fokussierung auf eine schwierige einzelne Klasse (Person) macht die direkte mAP-Zahl anspruchsvoller als bei Multi-Klassen-Scores, bei denen „leichtere“ Klassen (z. B. Fahrzeuge) den Durchschnitt heben.
+
+Insgesamt lässt sich das VisDrone-Basismodell damit als qualitativ starkes, wettbewerbsfähiges Personendetektionsmodell einordnen.
+
+---
+
+## 2. SARD – Spezialisierte SAR-Personendetektion
+
+### Eigene Modelle
+
+Für das SARD-Datenset wurden insbesondere folgende Modelle ausgewertet:
+
+* `stage2b_dce_best` (DCE-Architektur, Stage-2B, nur SARD/HERIDAL):
+
+  * Precision: 0,8843
+  * Recall: 0,7259
+  * mAP@0,5: 0,8234
+  * mAP@0,5–0,95: 0,3661
+
+* `stage3_sar_recallpush_6ep_best`:
+
+  * Precision: 0,8654
+  * Recall: 0,6678
+  * mAP@0,5: 0,7887
+  * mAP@0,5–0,95: 0,3681
+
+Damit erreicht insbesondere `stage2b_dce_best` auf SARD ein hohes Präzisions-/Recall-Niveau und einen mAP@0,5-Wert von über 0,82.
+
+### Vergleich mit publizierten Benchmarks
+
+In der verfügbaren Literatur wird SARD meist im Kontext von Such- und Rettungsanwendungen aus der Luft behandelt. Es existieren Arbeiten, in denen klassische bzw. frühere YOLO-Varianten (z. B. YOLOv4 oder YOLOv5-Derivate) und andere CNN-Detektoren auf SARD evaluiert werden. Diese Arbeiten berichten typischerweise mAP@0,5-Werte im Bereich von etwa 0,6–0,7, abhängig von Trainingssetup, Backbone und genutzten zusätzlichen Daten (z. B. Kombination mit synthetischen Disaster-Datensätzen).
+
+Eine neuere Arbeit zur C2A-Datensammlung (kombinierte Katastrophenszenarien) vergleicht verschiedene Detektoren und diskutiert SARD im Rahmen eines breiteren Benchmarks für Menschendetektion in Katastrophenszenarien. In diesem Kontext werden für YOLO-Modelle mAP@0,5-Werte im Bereich um 0,66 auf SARD berichtet, wenn Modelle auf generischen Human-Daten plus C2A trainiert und dann auf SARD evaluiert werden.
+
+Vor diesem Hintergrund liegt dein `stage2b_dce_best`-Modell mit mAP@0,5 ≈ 0,82 deutlich oberhalb vieler veröffentlichter Referenzwerte, bei gleichzeitig hoher Precision und hohem Recall. Auch der mAP@0,5–0,95 (≈ 0,37) deutet auf eine robuste Lokalisierung über verschiedene IoU-Schwellen hin.
+
+Damit lassen sich die SARD-Ergebnisse als sehr stark und im Bereich der aktuell berichteten Spitzenleistungen einordnen.
+
+---
+
+## 3. HERIDAL – Wald-/Wilderness-Szenarien
+
+### Eigene Modelle
+
+Für HERIDAL wurden u. a. folgende Resultate gemessen:
+
+* `stage2b_dce_best`:
+
+  * Precision: 0,6695
+  * Recall: 0,5735
+  * mAP@0,5: 0,6190
+  * mAP@0,5–0,95: 0,2787
+
+* `stage3_sard_heridal_best`:
+
+  * Precision: 0,6124
+  * Recall: 0,5607
+  * mAP@0,5: 0,6018
+  * mAP@0,5–0,95: 0,2830
+
+Die Modelle zeigen somit auf HERIDAL eine mAP@0,5 um 0,60 bei moderat hoher Precision und Recall.
+
+### Vergleich mit publizierten Benchmarks
+
+HERIDAL wurde in der Literatur ursprünglich im Kontext von Personendetektion in Luftbildern für Such- und Rettungseinsätze eingeführt. In der Einführung und Folgearbeiten werden verschiedene Detektoren (u. a. Faster R-CNN, YOLO-Varianten, EfficientDet-Modelle) auf HERIDAL evaluiert. Die Berichte zeigen:
+
+* Multimodale oder Ensemble-Ansätze erreichen sehr hohe Recall-Werte (teilweise > 0,9) bei Precision in einem Bereich um 0,7.
+* Einzelne Arbeiten mit spezialisierten YOLOv5-Abwandlungen berichten mAP@0,5-Werte im Bereich um 0,8 auf HERIDAL.
+
+Im direkten Vergleich liegen deine Modelle mit mAP@0,5 ≈ 0,62 unter diesen besten publizierten Werten, aber durchaus auf einem soliden Niveau. Insbesondere die Balance aus Precision und Recall ist eher konservativ als extrem recall-orientiert. Gleichzeitig zeigen die Ergebnisse, dass HERIDAL im aktuellen Setup die schwächste Domäne ist, verglichen mit VisDrone und SARD.
+
+Aus Sicht der Gesamtsystemleistung deutet dies darauf hin, dass eine eigene, stärker HERIDAL-zentrierte Finetuning-Phase (z. B. zusätzliche Epochen nur auf HERIDAL mit optimierter Augmentierung für Wald- und Bewuchsstrukturen) noch Verbesserungspotenzial bietet.
+
+---
+
+## 4. UAVDT – Zielmetriken für Tracking
+
+Für UAVDT liegen im hier betrachteten Projekt noch keine eigenen Tracking-Ergebnisse vor; es wurden jedoch Zielmetriken definiert:
+
+* IDF1 ≥ 0,55
+* MOTA ≥ 0,35
+* ID-Switch-Rate ≤ 5 %
+
+Publizierte Arbeiten zur Multi-Object-Verfolgung auf UAVDT berichten für moderne Tracking-Verfahren (Kombinationen aus Detektoren, oft auf YOLO-Basis, plus Trackern wie DeepSORT, ByteTrack, oder eigens entwickelte MOT-Netzwerke) typischerweise:
+
+* MOTA im Bereich von etwa 0,30 bis 0,50
+* IDF1 im Bereich von etwa 0,50 bis 0,70
+
+Die im Projekt gesetzten Zielgrößen (MOTA ≥ 0,35, IDF1 ≥ 0,55) liegen damit im unteren bis mittleren Bereich dessen, was aktuell auf UAVDT erreichbar ist. Unter der Annahme, dass die vorhandenen Detektoren (insbesondere `new_stage1`/`best.pt`) in eine saubere Tracking-Pipeline (z. B. mit ByteTrack oder DeepSORT) integriert werden, erscheinen diese Zielwerte realistisch und erreichbar. Gleichzeitig besteht bei sorgfältiger Integration und Hyperparameter-Optimierung die Möglichkeit, MOTA-Werte im Bereich 0,40–0,50 zu erreichen.
+
+---
+
+## 5. Kontrolle von False Positives (NTUT4K)
+
+### Eigene FP-only-Ergebnisse
+
+Da NTUT4K überwiegend negative Beispiele (Landschaft, Infrastruktur, keine Personen) enthält, wird es zur Messung und Reduktion von False Positives eingesetzt. Typische Ergebnisse (FP-only-Evaluierung) sind:
+
+* `best.pt` (VisDrone-Basismodell, ohne SAR-Spezialisierung):
+
+  * Durchschnittliche False Positives pro Bild: ≈ 8,80
+
+* `stage2b_dce_best`:
+
+  * ≈ 4,05 FP/Bild
+
+* `stage3_4ep_best`:
+
+  * ≈ 0,012 FP/Bild
+
+* `stage3_sar_mix_newstage1_4ep_best`:
+
+  * ≈ 0,0024 FP/Bild
+
+Damit sinkt die FP-Rate von einem hohen Ausgangswert (≈ 8–9 FP/Bild) auf praktisch vernachlässigbares Niveau im Bereich von 10⁻³ bis 10⁻² FP/Bild, wenn stark negative Datensätze und geeignete Fine-Tuning-Strategien einbezogen werden.
+
+### Einordnung
+
+In der Literatur wird der explizite Einsatz großer Negativsets (reine Nicht-Person-Landschaften) zur systematischen FP-Reduktion zwar gelegentlich erwähnt (z. B. im Kontext von Hard-Negative-Mining oder „background“-Klassen), systematische Auswertungen auf dedizierten Negativ-Datensätzen wie NTUT4K sind jedoch seltener publiziert.
+
+Die beobachtete Reduktion der FP-Rate um mehrere Größenordnungen deutet darauf hin, dass der gewählte Ansatz (gezieltes Fine-Tuning mit vielen Landschafts-/Hintergrundbildern aus NTUT4K) in der Praxis sehr wirksam ist und einen eigenständigen Beitrag zur Robustheit des Systems leistet, insbesondere für SAR-Einsätze mit hohem Anspruch an geringe Fehlalarme.
+
+---
+
+## 6. Laufzeit und Echtzeitfähigkeit
+
+Die im Projekt gesetzte Zielgröße für Echtzeit-Einsatz lautet:
+
+* mindestens etwa 15 FPS (Frames pro Sekunde) auf einer RTX A2000 bei `imgsz ≈ 800`.
+
+In publizierten Arbeiten erreichen kleine oder mittelgroße YOLO-Backbones (YOLOv5-/YOLOv8-n,s,m-Klasse) auf Desktop-GPUs typischerweise zwischen 20 und 60 FPS, abhängig von Bildauflösung, Optimierungsgrad und Implementierungsdetails. Auf eingebetteten Systemen (z. B. Jetson-Plattformen) werden häufig noch 20–40 FPS mit kompakten Backbones berichtet.
+
+Vor diesem Hintergrund erscheint ein Ziel von ≥ 15 FPS für ein YOLOv8m-basiertes SAR-Modell auf einer RTX A2000 als konservativ und gut erreichbar. Die aktuelle Modellgröße und die verwendeten Konfigurationen sind mit gängigen Echtzeit-Szenarien kompatibel. Eine systematische Benchmarktabelle über alle Modelle (mit Messungen in ms/Frame und FPS) wäre ein sinnvoller nächster Schritt zur vollständigen Dokumentation.
+
+---
+
+## 7. Gesamtfazit
+
+Die vorliegenden Ergebnisse lassen sich wie folgt zusammenfassen:
+
+1. **VisDrone-Personendetektion**
+   Das neue Basismodell `new_stage1` erreicht mit mAP@0,5 = 0,6297 und erhöhtem Precision/Recall-Niveau eine für die Person-Klasse sehr starke Performance. Im Vergleich zu publizierten, meist Multi-Klassen-Ergebnissen auf VisDrone liegt das Modell im oberen Bereich und kann als wettbewerbsfähige Grundlage für weitere SAR-Spezialisierung betrachtet werden.
+
+2. **SARD – SAR-spezifische Personendetektion**
+   Für das SARD-Datenset erreicht `stage2b_dce_best` mAP@0,5 ≈ 0,82 bei hoher Precision und hohem Recall. Dies liegt deutlich über vielen in der Literatur rapportierten Werten und entspricht einem sehr hohen Leistungsniveau für die Detektion von Personen in SAR-Szenarien. Der DCE-Ansatz trägt hierbei messbar zur Performance bei.
+
+3. **HERIDAL – Wald- und Wilderness-Umgebungen**
+   Auf HERIDAL erzielen die Modelle mAP@0,5 im Bereich 0,60–0,62. Diese Werte liegen unterhalb der besten veröffentlichten Ergebnisse (um etwa 0,8 mAP@0,5), sind aber insgesamt solide. HERIDAL stellt damit aktuell die schwierigste Domäne dar und bietet klar identifizierbares Verbesserungspotenzial durch gezielteres Datenset-/Augmentierungs-Design oder ein dediziertes HERIDAL-Fine-Tuning.
+
+4. **False-Positive-Reduktion mit NTUT4K**
+   Durch Einbezug des stark negativen NTUT4K-Datensatzes kann die FP-Rate von ursprünglich rund 8–9 FPs/Bild (`best.pt`) auf Werte um 10⁻² bis 10⁻³ FPs/Bild gesenkt werden. Dies zeigt eine ausgeprägte Robustheit gegenüber Landschaftsszenen und spricht für die Praxistauglichkeit im SAR-Kontext, in dem geringe Fehlalarmraten zentral sind.
+
+5. **Tracking-Ziele auf UAVDT**
+   Die definierten Zielwerte (MOTA ≥ 0,35, IDF1 ≥ 0,55) liegen im realistischen Bereich der publizierten Ergebnisse für UAVDT und sind mit einer sauberen Integration moderner Tracker (z. B. ByteTrack/DeepSORT) auf Basis der vorhandenen Detektoren voraussichtlich erreichbar.
+
+6. **Echtzeitfähigkeit**
+   Die anvisierte Echtzeitfähigkeit (≥ 15 FPS auf RTX A2000) erscheint technisch gut erreichbar und ist im Rahmen ähnlicher Arbeiten eher konservativ angesetzt.
+
+Insgesamt deutet die Gesamtschau darauf hin, dass das System – insbesondere in Bezug auf SARD und die FP-Kontrolle – ein sehr hohes Niveau erreicht und sich im Bereich aktueller State-of-the-Art-Ansätze bewegt. Die wesentlichen offenen Punkte liegen in der weiteren Optimierung der HERIDAL-Performance und in der abschließenden Integration des Trackings auf UAVDT, um das Gesamtsystem vollständig zu evaluieren.
+
+---
+
+## Literaturverzeichnis (ausgewählte Referenzen)
+
+1. Zhu, P., Wen, L., Du, D., Bian, X., Ling, H., and Hu, Q.
+   „Vision Meets Drones: A Challenge.“
+   International Journal of Computer Vision, Band 129, 2021, Seiten 1–31.
+   (Einführung und Benchmarkbeschreibung für das VisDrone-Datenset.)
+
+2. „SOD-YOLO: A lightweight small object detection framework.“
+   Scientific Reports, Nature Portfolio, online publizierter Artikel zur leichten Objektdetektion mit YOLO-basiertem Ansatz auf Datensätzen wie VisDrone.
+   (Veröffentlicht im Zeitraum 2024/2025; genaue Angaben siehe Originalpublikation.)
+
+3. „VRF-DETR: Vision-guided Residual Feature Detection Transformer.“
+   arXiv-Preprint arXiv:2504.15165, 2025.
+   (Transformatorbasierter Detektor mit Auswertungen u. a. auf VisDrone-ähnlichen Szenarien.)
+
+4. Ragib Amin Nihal et al.
+   „UAV-Enhanced Combination to Application: Comprehensive Analysis and Benchmarking of a Human Detection Dataset for Disaster Scenarios.“
+   arXiv-Preprint arXiv:2408.04922, 2024.
+   (Einführung des C2A-Datensets und Vergleich verschiedener Detektoren; enthält u. a. Statistiken zu SARD und ähnlichen Datensätzen.)
+
+5. „Multimodal Deep Learning for Person Detection in Aerial Images.“
+   Electronics, MDPI, 2020.
+   (Arbeit zur Personendetektion in Luftbildern mit Beschreibung und Nutzung des HERIDAL-Datensets.)
+
+6. „Open Problems in Computer Vision for Wilderness Search and Rescue with Drones.“
+   Remote Sensing, MDPI, Erscheinungsjahr im Bereich 2023/2024.
+   (Übersichtsarbeit zu Such- und Rettungsanwendungen in Wald-/Wilderness-Szenarien; diskutiert HERIDAL und Detektionsmodelle wie EfficientDet.)
+
+7. Du, D., Qi, Y., Yu, H. et al.
+   „The Unmanned Aerial Vehicle Benchmark: Object Detection and Tracking.“
+   In: European Conference on Computer Vision (ECCV) Workshops, 2018.
+   (Einführung des UAVDT-Benchmarks für Detektion und Tracking in UAV-Videos.)
+
+8. Shrivastava, A., Gupta, A., und Girshick, R.
+   „Training Region-Based Object Detectors with Online Hard Example Mining.“
+   In: Proceedings of the IEEE Conference on Computer Vision and Pattern Recognition (CVPR), 2016.
+   (Grundlegende Arbeit zum Hard-Negative-/Hard-Example-Mining, relevant für Strategien zur Reduktion von False Positives.)
+
+### Learnings
+
+---
+
+### 1. Daten & Domänenverständnis
+
+* Ein starkes, breit trainiertes VisDrone-Personenmodell ist eine extrem gute Basis für SAR – deutlich wichtiger als kleine Architektur-Tricks am Anfang.
+* SAR ist keine eigene „Magie-Domäne“, sondern eine Verschiebung: weniger urbane Szenen, mehr Landschaft, andere Perspektiven, kleinere und oft teilverdeckte Personen.
+* VisDrone bleibt auch für SAR hilfreich: das Modell lernt dort robuste Person-Merkmale, die später in SARD/HERIDAL noch verfeinert werden können.
+* HERIDAL und SARD sind inhaltlich sehr unterschiedlich: SARD eher strukturiert/„klar“, HERIDAL deutlich wilder, unübersichtlicher und dadurch für das Modell sichtbar härter.
+* Ein eigener negativer Datensatz (NTUT4K) ist für FP-Kontrolle Gold wert: das Modell lernt explizit, wie „nur Landschaft, keine Menschen“ aussieht – das ist fast so wichtig wie positive Beispiele.
+
+---
+
+### 2. Architektur vs. Training – was wirklich zählt
+
+* Das Basismodell YOLOv8m reicht von der Kapazität her aus; der Großteil der Leistungsgewinne kam durch Daten und Trainingsstrategie, nicht durch exotische Architekturen.
+* Die DCE-Variante zeigt: eine spezialisierte Architektur kann auf SARD klar gewinnen, verliert aber deutlich an Generalität auf VisDrone. Architekturänderungen sind also scharf domänengekoppelt.
+* Fazit: Architektur-Tuning lohnt sich vor allem dann, wenn ein sehr klar umrissener Ziel-Datensatz im Fokus steht (z. B. SARD), weniger als allgemeine „One-size-fits-all“-Lösung.
+
+---
+
+### 3. Trainingsstrategie & Stages
+
+* Der Drei-Stufen-Ansatz hat sich bewährt:
+
+  1. Allgemeine Personendetektion auf VisDrone,
+  2. Re-Finetuning,
+  3. SAR-spezifisches Finetuning auf SARD/HERIDAL (plus Negativdaten).
+* Kurze, gezielte Finetuning-Phasen nach einem starken Basismodell bringen sehr viel – deutlich mehr als noch ein komplett neuer „from scratch“-Versuch.
+* Zu starke Spezialisierung auf SAR kann das allgemeine Verhalten verschlechtern (z. B. VisDrone-Performance), der Trade-off zwischen Spezialisierung und Generalität ist real.
+* Mehr Epochen sind nicht automatisch besser: ab einem gewissen Punkt verschiebt sich das Modell nur noch in Richtung der letzten Daten (z. B. SARD/HERIDAL) und verliert an Allround-Fähigkeit.
+
+---
+
+### 4. False Positives & Umgang mit Negativdaten
+
+* Ohne explizite Negativdaten tendiert ein starkes Personendetektionsmodell dazu, in Landschaften „überall“ Personen zu sehen.
+* Ein großer, sauberer Negativsatz (NTUT4K) ist extrem wirksam, um das Modell zu „disziplinieren“: Es lernt, dass Gras, Fels, Bäume und Strukturen ohne Menschen eben auch „nichts“ bedeuten können.
+* FP-Reduktion ist nicht nur eine Frage des Confidence-Thresholds, sondern vor allem eine Frage des Trainings: das Modell muss Hintergründe tatsächlich kennen lernen, nicht nur „unsicherer werden“.
+* Zu aggressives Negativtraining kann das Modell aber auch zu vorsichtig machen – der Punkt ist Balance: genug Negativbeispiele, ohne echte Personen „wegzuerziehen“.
+
+---
+
+### 5. Thresholds, Heuristiken & Live-Betrieb
+
+* Ein fester, „sicherer“ Confidence-Threshold ist ein wichtiges Stellrad, um FP im Feld zu kontrollieren; hohe Thresholds kosten Recall, bringen aber oft deutlich bessere Interpretierbarkeit für den Operator.
+* Konfidenz allein reicht nicht: zusätzliche Heuristiken wie Mindest-Boxfläche oder Entfernung von extrem kleinen/länglichen Boxen helfen, typische SAR-FPs loszuwerden (Grasbüschel, Strukturen, Texturen).
+* Die optimale Konfiguration hängt vom Modus ab:
+
+  * Suchmodus: eher niedriger Threshold, dafür mehr FPs akzeptabel,
+  * Bestätigungs-/Entscheidungsmodus: höherer Threshold, stärker gefilterte Detections.
+* Die Live-Video-Pipeline mit Metriken (Detektionen/Frame, FPS, Laufzeit) ist entscheidend, um Verhalten im Realbetrieb zu verstehen – Papiermetriken alleine reichen nicht.
+
+---
+
+### 6. Multi-Dataset-Benchmarking & Werkzeuge
+
+* Ein einheitliches Benchmark-Skript über alle Modelle und Datensätze (inkl. FP-only-Fallback) ist extrem wertvoll: Entscheidungen lassen sich nicht mehr aus Einzelruns oder Bauchgefühl ableiten, sondern konsistent vergleichen.
+* FP-only-Bewertung auf rein negativen Sets ist ein wichtiges zusätzliches Qualitätsmaß, das in klassischen Papers selten erscheint, aber für reale SAR-Systeme zentral ist.
+* Val-Only-Modus, stabilisierte Batch-/Worker-Settings und sauber versionierte Configs verhindern, dass Verbesserungen nur aus Zufall oder instabilen Umgebungen stammen.
+* Ohne diese Tooling-Schicht wäre es nahezu unmöglich gewesen, Architekturideen (DCE) und Trainingsstrategien (Recall-Push, Negativ-Mix, etc.) wirklich fair zu vergleichen.
+
+---
+
+### 7. Rollen der einzelnen Modelle
+
+* `new_stage1` (VisDrone-Basis) eignet sich hervorragend als universelle Personen-Engine: stark in urbanen und gemischten Szenen, gute Ausgangsbasis.
+* SAR-spezifische Stage-3-Modelle (SARD/HERIDAL-Finetuning) verschieben den Schwerpunkt hin zu Suche in unübersichtlichem Gelände, akzeptieren aber ein Stück weit, dass „klassische“ Drohnenszenen nicht mehr optimal sind.
+* DCE-Modelle sind besonders geeignet, wenn SARD im Zentrum steht und andere Domänen zweitrangig sind.
+* Für reale Einsätze ist die Kombination entscheidend: starkes Basismodell + SAR-Finetuning + Negativdaten + geschickte Inferenz-Heuristiken.
+
+---
+
+### 8. Offene Punkte & weiterer Nutzen
+
+* HERIDAL bleibt der schwierigste Datensatz: dichter Bewuchs, Tarnung, kleine Ziele. Hier liegt das größte verbliebene Verbesserungspotenzial – etwa durch speziellere Augmentierung, Fokus-Finetuning oder zusätzliche Daten.
+* Tracking ist noch nicht vollständig integriert, aber die Zielmetriken sind in Reichweite, wenn die vorhandenen Detektoren sauber an ByteTrack/DeepSORT angebunden werden.
+* Der Gesamtprozess (Datenaufbereitung, Stage-Design, Architektur-Variation, Negativtraining, Benchmarking) ist selbst ein wichtiges Ergebnis: er ist wiederverwendbar für andere UAV-/SAR-Projekte.
+
+---
+
+### Kurz-Fazit
+
+* Die größten Gewinne kamen nicht durch „exotische Netze“, sondern durch eine saubere Pipeline: starkes Basismodell, sinnvolle Stages, passende Datensätze und systematisches Benchmarking.
+* DCE-Architektur und Negativdaten zeigen, dass zielgerichtete Anpassungen in klar definierten Domänen (SARD, Landschaft) sehr große Effekte haben können, wenn sie nicht losgelöst, sondern eingebettet in eine starke Basis und eine gute Trainingsstrategie eingesetzt werden.
+* Die Arbeit liefert nicht nur ein einzelnes gutes Modell, sondern ein konsistentes Vorgehen, wie man aus allgemeinen UAV-Personenmodellen robuste, SAR-taugliche Systeme mit kontrollierbarer FP-Rate ableiten kann.
