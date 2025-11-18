@@ -1,0 +1,14 @@
+{
+  "stage1_visdrone": {
+    "visdrone": {
+      "model": "stage1_visdrone",
+      "dataset": "visdrone",
+      "precision": 0.7326791482708724,
+      "recall": 0.5705715088281621,
+      "mAP50": 0.6296553272386881,
+      "mAP50-95": 0.26799648371601736,
+      "fitness": 0.26799648371601736,
+      "mode": "GT"
+    }
+  }
+}
