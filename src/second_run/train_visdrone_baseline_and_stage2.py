@@ -21,7 +21,7 @@ import matplotlib.pyplot as plt
 import pandas as pd
 from ultralytics import YOLO
 
-from src.config import PROJECT_ROOT, DEVICE, DATA_ROOT
+from config import PROJECT_ROOT, DEVICE, DATA_ROOT
 
 
 class OptimizedSARTrainer:

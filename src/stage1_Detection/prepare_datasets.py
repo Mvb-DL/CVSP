@@ -5,7 +5,7 @@ from pathlib import Path
 import tarfile
 import zipfile
 
-from src.config import DATA_ROOT, VISDRONE_ROOT, UAVDT_ROOT, OKUTAMA_ROOT
+from config import DATA_ROOT, VISDRONE_ROOT, UAVDT_ROOT, OKUTAMA_ROOT
 
 
 

@@ -9,7 +9,7 @@ import platform
 from datetime import datetime
 
 from ultralytics import YOLO
-from src.config import PROJECT_ROOT, DEVICE
+from config import PROJECT_ROOT, DEVICE
 
 
 # ---------------------------------------------------------------------

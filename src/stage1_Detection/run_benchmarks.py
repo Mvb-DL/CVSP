@@ -11,7 +11,7 @@ import torch
 import matplotlib.pyplot as plt
 import torchvision.transforms as T
 
-from src.config import VISDRONE_ROOT, OKUTAMA_ROOT, UAVDT_ROOT, OUTPUT_ROOT, DEVICE
+from config import VISDRONE_ROOT, OKUTAMA_ROOT, UAVDT_ROOT, OUTPUT_ROOT, DEVICE
 from src.models import load_yolo_model, load_faster_rcnn, load_detr
 
 

@@ -6,7 +6,7 @@ from typing import List
 
 import torch
 
-from src.config import VISDRON_ROOT, OKUTAMA_ROOT, UAVDT_ROOT
+from config import VISDRON_ROOT, OKUTAMA_ROOT, UAVDT_ROOT
 from src.models import load_yolo_model
 from src.datasets.visdron import get_visdron_sample_images
 from src.datasets.uavdt import get_uavdt_sample_images

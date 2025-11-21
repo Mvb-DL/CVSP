@@ -11,7 +11,7 @@ import torch
 
 # Handle imports
 try:
-    from src.config import PROJECT_ROOT, DEVICE, DATA_ROOT
+    from config import PROJECT_ROOT, DEVICE, DATA_ROOT
 except ModuleNotFoundError:
     from config import PROJECT_ROOT, DEVICE, DATA_ROOT
 

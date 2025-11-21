@@ -1,0 +1,31 @@
+# SAR Composite Dataset Config (PAPERSPACE LINUX - FINAL VERSION)
+# Pfade angepasst an: /notebooks/CVSP/data/
+
+names:
+  0: person
+
+path: # leer lassen
+
+train: 
+  # --- 1. BASIS DATEN (VisDrone) - 2x Duplizierung für Dominanz ---
+  - /notebooks/data/VisdroneYOLO/images/train
+  - /notebooks/data/VisdroneYOLO/images/train
+  
+  # --- 2. SAR SPEZIFISCHE DATEN (SARD/HERIDAL) - 1x ---
+  - /notebooks/data/HERIDALYOLO/images/train
+  - /notebooks/data/SARDYOLO/images/train
+  
+  # --- 3. HINTERGRUND DATEN (NTUT) - 1x ---
+  - /notebooks/data/NTUT4KYOLO/images/train 
+
+val: 
+  # Validiere auf VisDrone
+  - /notebooks/data/VisdroneYOLO/images/val
+  # Validiere auf SAR-Daten
+  - /notebooks/data/HERIDALYOLO/images/val
+  - /notebooks/data/SARDYOLO/images/val
+
+
+
+
+  

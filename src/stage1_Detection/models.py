@@ -6,7 +6,7 @@ import pandas as pd
 from datetime import datetime
 from ultralytics import YOLO
 
-from src.config import PROJECT_ROOT, DEVICE
+from config import PROJECT_ROOT, DEVICE
 
 
 def setup_experiment_dir(experiment_name: str) -> Path:

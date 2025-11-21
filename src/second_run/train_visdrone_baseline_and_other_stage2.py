@@ -23,7 +23,7 @@ from datetime import datetime
 from typing import Optional, Dict, List
 
 from ultralytics import YOLO
-from src.config import PROJECT_ROOT, DEVICE, DATA_ROOT
+from config import PROJECT_ROOT, DEVICE, DATA_ROOT
 
 
 # =============================================================================

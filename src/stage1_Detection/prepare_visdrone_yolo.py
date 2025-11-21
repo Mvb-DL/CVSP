@@ -6,7 +6,7 @@ from typing import List, Tuple, Dict, Any, Optional
 
 from PIL import Image 
 
-from src.config import DATA_ROOT, VISDRONE_ROOT
+from config import DATA_ROOT, VISDRONE_ROOT
 
 
 VISDRONE_YOLO_ROOT = DATA_ROOT / "VisdroneYOLO"

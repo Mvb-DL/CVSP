@@ -26,7 +26,7 @@ from ultralytics import YOLO
 
 # Handle imports when running from src/ or project root
 try:
-    from src.config import PROJECT_ROOT, DEVICE, DATA_ROOT
+    from config import PROJECT_ROOT, DEVICE, DATA_ROOT
 except ModuleNotFoundError:
     from config import PROJECT_ROOT, DEVICE, DATA_ROOT
 

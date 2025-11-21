@@ -3,7 +3,7 @@ from pathlib import Path
 from collections import Counter
 import re
 
-from src.config import EXTERNAL_ROOT
+from config import EXTERNAL_ROOT
 
 CANDIDATES = {
     "zenodo":  EXTERNAL_ROOT / "zenodo7740081_yolo",
