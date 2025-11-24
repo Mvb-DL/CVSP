@@ -1,0 +1,48 @@
+{
+  "stage_1_dce_sar_best_of_all": {
+    "SARD": {
+      "model": "stage_1_dce_sar_best_of_all",
+      "dataset": "SARD",
+      "precision": 0.7801302931596091,
+      "recall": 0.3274094326725906,
+      "mAP50": 0.5428714620719032,
+      "mAP50-95": 0.20568670919807036,
+      "fitness": 0.20568670919807036,
+      "mode": "GT"
+    },
+    "HERIDAL": {
+      "model": "stage_1_dce_sar_best_of_all",
+      "dataset": "HERIDAL",
+      "precision": 0.6068453676971347,
+      "recall": 0.5073529411764706,
+      "mAP50": 0.5438735287888947,
+      "mAP50-95": 0.2851406041315267,
+      "fitness": 0.2851406041315267,
+      "mode": "GT"
+    },
+    "VISDRONE": {
+      "model": "stage_1_dce_sar_best_of_all",
+      "dataset": "VISDRONE",
+      "precision": 0.6860445351011388,
+      "recall": 0.5778509556875939,
+      "mAP50": 0.6472500077119231,
+      "mAP50-95": 0.26438367058781337,
+      "fitness": 0.26438367058781337,
+      "mode": "GT"
+    },
+    "NTUT4K": {
+      "model": "stage_1_dce_sar_best_of_all",
+      "dataset": "NTUT4K",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null,
+      "fitness": null,
+      "avg_fp_per_image": 3.004884004884005,
+      "images": 819,
+      "total_preds": 2461,
+      "max_preds_single_image": 26,
+      "mode": "FP-only"
+    }
+  }
+}
