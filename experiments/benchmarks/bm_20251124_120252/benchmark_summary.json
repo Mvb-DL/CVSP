@@ -1,0 +1,48 @@
+{
+  "stage1_dce_sar_a6000": {
+    "SARD": {
+      "model": "stage1_dce_sar_a6000",
+      "dataset": "SARD",
+      "precision": 0.838015143138571,
+      "recall": 0.7088174982911825,
+      "mAP50": 0.7919328161124717,
+      "mAP50-95": 0.31392864314011387,
+      "fitness": 0.31392864314011387,
+      "mode": "GT"
+    },
+    "HERIDAL": {
+      "model": "stage1_dce_sar_a6000",
+      "dataset": "HERIDAL",
+      "precision": 0.016594960049170254,
+      "recall": 0.04963235294117647,
+      "mAP50": 0.00912327042968808,
+      "mAP50-95": 0.004713770682623215,
+      "fitness": 0.004713770682623215,
+      "mode": "GT"
+    },
+    "VISDRONE": {
+      "model": "stage1_dce_sar_a6000",
+      "dataset": "VISDRONE",
+      "precision": 0.7028012267332003,
+      "recall": 0.5974658171665832,
+      "mAP50": 0.6613136455002774,
+      "mAP50-95": 0.24779929608885762,
+      "fitness": 0.24779929608885762,
+      "mode": "GT"
+    },
+    "NTUT4K": {
+      "model": "stage1_dce_sar_a6000",
+      "dataset": "NTUT4K",
+      "precision": null,
+      "recall": null,
+      "mAP50": null,
+      "mAP50-95": null,
+      "fitness": null,
+      "avg_fp_per_image": 5.446886446886447,
+      "images": 819,
+      "total_preds": 4461,
+      "max_preds_single_image": 68,
+      "mode": "FP-only"
+    }
+  }
+}

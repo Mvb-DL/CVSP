@@ -13,6 +13,7 @@ train:
   
   # --- 2. SAR SPEZIFISCHE DATEN (SARD/HERIDAL) - 1x ---
   - /notebooks/data/HERIDALYOLO/images/train
+  - /notebooks/data/HERIDALYOLO/images/train
   - /notebooks/data/SARDYOLO/images/train
   
   # --- 3. HINTERGRUND DATEN (NTUT) - 1x ---

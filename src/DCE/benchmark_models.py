@@ -1,12 +1,19 @@
 # src/benchmark_models.py
 from __future__ import annotations
-import argparse, json, csv
+import argparse, json, csv, os, pathlib  # os und pathlib ergänzen!
 from pathlib import Path
 from datetime import datetime
 from typing import Dict, List
 import matplotlib.pyplot as plt
 
+# >>> Windows-Fix für Linux-Checkpoints mit PosixPath <<<
+if os.name == "nt":
+    # YOLO-Checkpoints, die unter Linux gespeichert wurden, enthalten oft pathlib.PosixPath.
+    # Auf Windows wirft das beim Unpickling sonst UnsupportedOperation.
+    pathlib.PosixPath = pathlib.WindowsPath  # monkeypatch
+
 from ultralytics import YOLO
+
 
 # ---------- Minimal-YAML-Leser für val-Pfade ----------
 def _read_yaml_minimal(yaml_path: Path):

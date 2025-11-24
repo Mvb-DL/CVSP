@@ -1,0 +1,5 @@
+avg_fp_per_image,dataset,fitness,images,mAP50,mAP50-95,max_preds_single_image,mode,model,precision,recall,total_preds
+,SARD,0.3540576984267412,,0.8081675708212794,0.3540576984267412,,GT,stage_2_dce_sar_best_of_all_no_heridal_focus,0.8376156282756636,0.734107997265892,
+,HERIDAL,0.004615654433104752,,0.008539278301661343,0.004615654433104752,,GT,stage_2_dce_sar_best_of_all_no_heridal_focus,0.011566265060240964,0.04411764705882353,
+,VISDRONE,0.29318077600787107,,0.680966333829681,0.29318077600787107,,GT,stage_2_dce_sar_best_of_all_no_heridal_focus,0.7293012131424665,0.5971078817381344,
+3.8315018315018317,NTUT4K,,819,,,56,FP-only,stage_2_dce_sar_best_of_all_no_heridal_focus,,,3138

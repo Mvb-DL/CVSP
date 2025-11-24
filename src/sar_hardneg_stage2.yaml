@@ -1,0 +1,24 @@
+# cfg/sar_hardneg_stage2.yaml
+# Stage-2: Hard-Negative Finetune (NTUT stark, plus SAR-Personen)
+
+names:
+  0: person
+
+path:  # leer lassen, wir nutzen absolute Pfade
+
+train:
+  # --- 1. HARD NEGATIVES (NTUT) - stark übergewichtet ---
+  - /notebooks/CVSP/data/NTUT4KYOLO/images/train
+  - /notebooks/CVSP/data/NTUT4KYOLO/images/train
+  - /notebooks/CVSP/data/NTUT4KYOLO/images/train
+
+  # --- 2. ECHTE PERSONEN (damit Personen nicht "verlernt" werden) ---
+  - /notebooks/CVSP/data/HERIDALYOLO/images/train
+  - /notebooks/CVSP/data/SARDYOLO/images/train
+  - /notebooks/CVSP/data/VisdroneYOLO/images/train
+
+val:
+  # Val auf "echten" Personen-Datasets
+  - /notebooks/CVSP/data/HERIDALYOLO/images/val
+  - /notebooks/CVSP/data/SARDYOLO/images/val
+  - /notebooks/CVSP/data/VisdroneYOLO/images/val

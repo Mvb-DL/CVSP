@@ -11,8 +11,13 @@ from ultralytics import YOLO
 import torch
 import time
 import numpy as np
+import os
+import pathlib
 
-
+if os.name == "nt":
+    # YOLO-Checkpoints, die unter Linux gespeichert wurden, enthalten oft pathlib.PosixPath.
+    # Auf Windows wirft das beim Unpickling sonst UnsupportedOperation.
+    pathlib.PosixPath = pathlib.WindowsPath  # monkeypatch
 class MetricsTracker:
     """Verwaltet und berechnet Metriken während der Inferenz"""
 
